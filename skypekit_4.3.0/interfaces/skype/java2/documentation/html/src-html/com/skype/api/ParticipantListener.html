@@ -1,0 +1,84 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    package com.skype.api;<a name="line.1"></a>
+<FONT color="green">002</FONT>    <a name="line.2"></a>
+<FONT color="green">003</FONT>    import com.skype.api.Participant;<a name="line.3"></a>
+<FONT color="green">004</FONT>    import com.skype.api.Participant;<a name="line.4"></a>
+<FONT color="green">005</FONT>    <a name="line.5"></a>
+<FONT color="green">006</FONT>    <a name="line.6"></a>
+<FONT color="green">007</FONT>    public interface ParticipantListener {<a name="line.7"></a>
+<FONT color="green">008</FONT>            /** This event gets called when there are changes to Participant properties defined in Participant.Property */<a name="line.8"></a>
+<FONT color="green">009</FONT>            public void onPropertyChange(Participant object, Participant.Property p, int value, String svalue);<a name="line.9"></a>
+<FONT color="green">010</FONT>            /** This event gets fired on receiving a DTMF signal sent by Participant. Note that this event will only fire if the Participant is also using a Skype client. Skype audio library does not monitor incoming voice streams for dial tones. DTMF events are propagated to remote participants via data channel. Incoming DTMF tones transmitted from, for example, mobile phones, will not cause this event to fire. In case of incoming DTMF signals from Skype clients, DTMF tones are also inserted into the audio stream. You don't have to inject those into local audio playback yourself.  * @param dtmf Returns Participant.DTMF value. <a name="line.10"></a>
+<FONT color="green">011</FONT>             */<a name="line.11"></a>
+<FONT color="green">012</FONT>            public void onIncomingDtmf(Participant object, Participant.Dtmf dtmf);<a name="line.12"></a>
+<FONT color="green">013</FONT>            /**<a name="line.13"></a>
+<FONT color="green">014</FONT>             * onLiveSessionVideosChanged<a name="line.14"></a>
+<FONT color="green">015</FONT>             * @param object<a name="line.15"></a>
+<FONT color="green">016</FONT>             */<a name="line.16"></a>
+<FONT color="green">017</FONT>            public void onLiveSessionVideosChanged(Participant object);<a name="line.17"></a>
+<FONT color="green">018</FONT>    }<a name="line.18"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

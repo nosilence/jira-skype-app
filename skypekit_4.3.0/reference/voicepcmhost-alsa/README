@@ -1,0 +1,15 @@
+This is an reference implementation of PCMHost using Alsa audio driver for AGC (audio gain control) feature support, in order to pass Skype certification for targeting platform Linux-x86. 
+Please check and make sure you have 32 bit alsa lib downloaded and installed in your machine. e.g. for ubuntu user, you can type  sudo apt-get install libasound2-dev to install alsa lib.
+
+Some source code for alsa function calls are encapulated in the libSkypeAlsaWrapper.so library. This library should be generated first by typing the "make" command under the voicepcmhost-alsa/SkypeAlsaWrapper directory. Please note, you need to define your own COMPILER_BARRIER in SkypeAlsaWrapper/CompilerBarrier.h for the corresponding device in order to guarantee memory ordering for SMP CPUs even on non-coherent archs like ARMv7 and MIPS..
+
+Building PCMHostAlsa:
+make - Build 
+build options: 
+	TARGET_ARCH=(default i686, see sid/buildfiles/arch directory for other TARGET_ARCH options) - build for specific architecture
+	verbose=(0 | 1, default 0) - be verbose
+make clean - clean build
+
+Running command:
+under voicepcmhost-alsa/build directory, type:
+LD_LIBRARY_PATH=../SkypeAlsaWrapper ./voicepcmhost-alsa

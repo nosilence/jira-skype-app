@@ -1,0 +1,758 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    package com.skype.api;<a name="line.1"></a>
+<FONT color="green">002</FONT>    <a name="line.2"></a>
+<FONT color="green">003</FONT>    import com.skype.ipc.SidRoot;<a name="line.3"></a>
+<FONT color="green">004</FONT>    import com.skype.ipc.SidObject;<a name="line.4"></a>
+<FONT color="green">005</FONT>    import com.skype.ipc.EnumConverting;<a name="line.5"></a>
+<FONT color="green">006</FONT>    import com.skype.ipc.PropertyEnumConverting;<a name="line.6"></a>
+<FONT color="green">007</FONT>    import com.skype.ipc.Decoding;<a name="line.7"></a>
+<FONT color="green">008</FONT>    import com.skype.ipc.Encoding;<a name="line.8"></a>
+<FONT color="green">009</FONT>    import com.skype.ipc.Encoding;<a name="line.9"></a>
+<FONT color="green">010</FONT>    import java.io.IOException;<a name="line.10"></a>
+<FONT color="green">011</FONT>    import com.skype.ipc.PropertyEnumConverting;<a name="line.11"></a>
+<FONT color="green">012</FONT>    import com.skype.ipc.SidGetResponding;<a name="line.12"></a>
+<FONT color="green">013</FONT>    <a name="line.13"></a>
+<FONT color="green">014</FONT>    /**<a name="line.14"></a>
+<FONT color="green">015</FONT>     * Transfer in this context refers to transferring (sending/receiving) files among Skype Contacts, not transferring a call to another Skype or PSTN Contact. This class includes file transfer-specific properties and methods, such as FILESIZE, BYTESPERSECOND, Pause and Resume. Recipients of these file transfers must explicitly accept (or decline) any incoming transfer. Transfer instances represent files being sent and received within a Conversation context. Each Transfer instance represents a single file transfer - if a conversation has multiple remote participants, a separate Transfer instance must be instantiated for each remote participant (a Transfer instance is not instantiated for the sender). <a name="line.15"></a>
+<FONT color="green">016</FONT>     * <a name="line.16"></a>
+<FONT color="green">017</FONT>     * Transfer instances cannot be instantiated directly. Instead, you initiate a file transfer by invoking Conversation.PostFiles. This instantiates a Message instance of type POSTED_FILES, which is added to the Conversation for all the participants (including the sender). The Transfer instance is associated with <a name="line.17"></a>
+<FONT color="green">018</FONT>     * this Message instance, and the Message.P_BODY_XML looks like this: <a name="line.18"></a>
+<FONT color="green">019</FONT>     * <a name="line.19"></a>
+<FONT color="green">020</FONT>     * @code <a name="line.20"></a>
+<FONT color="green">021</FONT>     * Some text&lt;files alt=""&gt;&lt;file size="2336020" index="0"&gt;test.zip&lt;/file&gt;&lt;/files&gt;  <a name="line.21"></a>
+<FONT color="green">022</FONT>     * &lt;/CODE&gt; <a name="line.22"></a>
+<FONT color="green">023</FONT>     * <a name="line.23"></a>
+<FONT color="green">024</FONT>     * To put it another way, the object chain goes like this: <a name="line.24"></a>
+<FONT color="green">025</FONT>     * @code <a name="line.25"></a>
+<FONT color="green">026</FONT>     * Conversation-&gt;Message-&gt;Transfer  <a name="line.26"></a>
+<FONT color="green">027</FONT>     * &lt;/CODE&gt; <a name="line.27"></a>
+<FONT color="green">028</FONT>     * <a name="line.28"></a>
+<FONT color="green">029</FONT>     * The first part of the message (before the files section) comes from the Conversation.PostFiles body argument. For each file in the message, a file section is provided with three fields: <a name="line.29"></a>
+<FONT color="green">030</FONT>     *  - file size in bytes <a name="line.30"></a>
+<FONT color="green">031</FONT>     *  - index - more or less arbitrary order in which the transfers should be displayed in the UI <a name="line.31"></a>
+<FONT color="green">032</FONT>     *  - file name. <a name="line.32"></a>
+<FONT color="green">033</FONT>     * <a name="line.33"></a>
+<FONT color="green">034</FONT>     * For practical purposes, the Message.P_BODY_XML property is not all that useful in this context. The Transfer instances, however, contain the state and progress feedback for your UI. You retrieve these Transfer instances using Message.GetTransfers method. Since the sender can post multiple files to <a name="line.34"></a>
+<FONT color="green">035</FONT>     * a Conversation using the same Message, Message:GetTransfers retrieves a list of Transfer instances - one per file per recipient. <a name="line.35"></a>
+<FONT color="green">036</FONT>     * <a name="line.36"></a>
+<FONT color="green">037</FONT>     * You can determine the direction of particular Transfer instance by querying Transfer.P_TYPE (INCOMING/OUTGOING).  <a name="line.37"></a>
+<FONT color="green">038</FONT>     * <a name="line.38"></a>
+<FONT color="green">039</FONT>     * You can implement a progress indicator by monitoring Transfer.P_BYTESTRANSFERRED. Note that when testing this on your local network, you will most likely catch these property change events at the beginning and the end of the transfer only - which does not look like too useful. However, for non-local network transfers where the transfer speeds are in the neighborhood of 200-300 KB per second, you should consider implementing progress feedback as being mandatory and expect to catch multiple property change events for all but the smallest files. <a name="line.39"></a>
+<FONT color="green">040</FONT>     * <a name="line.40"></a>
+<FONT color="green">041</FONT>     * Another property of interest is Transfer.P_STATUS. The normal transfer status sequence during successful outgoing transfer is this: <a name="line.41"></a>
+<FONT color="green">042</FONT>     *  - TRANSFER STATUS -&gt; NEW <a name="line.42"></a>
+<FONT color="green">043</FONT>     *  - TRANSFER STATUS -&gt; WAITING_FOR_ACCEPT <a name="line.43"></a>
+<FONT color="green">044</FONT>     *  - TRANSFER STATUS -&gt; CONNECTING <a name="line.44"></a>
+<FONT color="green">045</FONT>     *  - TRANSFER STATUS -&gt; TRANSFERRING <a name="line.45"></a>
+<FONT color="green">046</FONT>     *  - TRANSFER STATUS -&gt; CONNECTING <a name="line.46"></a>
+<FONT color="green">047</FONT>     *  - TRANSFER STATUS -&gt; COMPLETED <a name="line.47"></a>
+<FONT color="green">048</FONT>     * <a name="line.48"></a>
+<FONT color="green">049</FONT>     * The list of all terminal Transfer statuses is: <a name="line.49"></a>
+<FONT color="green">050</FONT>     *  - COMPLETED <a name="line.50"></a>
+<FONT color="green">051</FONT>     *  - FAILED <a name="line.51"></a>
+<FONT color="green">052</FONT>     *  - CANCELLED <a name="line.52"></a>
+<FONT color="green">053</FONT>     *  - CANCELLED_BY_REMOTE <a name="line.53"></a>
+<FONT color="green">054</FONT>     * <a name="line.54"></a>
+<FONT color="green">055</FONT>     * In-progress transfers can be canceled with Transfer.Cancel and paused/resumed with Transfer.Pause and Transfer.Resume. For transfers that complete with a status of FAILED, your UI should provide feedback based on the value of Transfer.P_FAILUREREASON. <a name="line.55"></a>
+<FONT color="green">056</FONT>     * <a name="line.56"></a>
+<FONT color="green">057</FONT>     * Incoming transfers, once accepted, overwrite existing files with the same name. Before accepting an incoming file transfer, <a name="line.57"></a>
+<FONT color="green">058</FONT>     * your UI should prompt the recipient to: <a name="line.58"></a>
+<FONT color="green">059</FONT>     *  - accept or decline the file <a name="line.59"></a>
+<FONT color="green">060</FONT>     *  - if accepted, specify the directory of here to save the file (with a pre-filled default) <a name="line.60"></a>
+<FONT color="green">061</FONT>     *  - if accepted and a file having the same name already exists at the specified destination, your UI should prompt for confirmation to overwrite and provide a way to alter the file name before accepting it <a name="line.61"></a>
+<FONT color="green">062</FONT>     * <a name="line.62"></a>
+<FONT color="green">063</FONT>     * Similarly, your UI should verify the existence of outgoing files prior to invoking Conversation.PostFiles. <a name="line.63"></a>
+<FONT color="green">064</FONT>     * <a name="line.64"></a>
+<FONT color="green">065</FONT>     * Note that you should provide both Conversation.PostFiles and Transfer.Accept methods fully-qualified paths. Otherwise, the paths will be assumed to be relative to the path of SkypeKit runtime, since the methods are actually executed in the runtime context. <a name="line.65"></a>
+<FONT color="green">066</FONT>     */<a name="line.66"></a>
+<FONT color="green">067</FONT>    public final class Transfer extends SidObject {<a name="line.67"></a>
+<FONT color="green">068</FONT>            public enum Type implements EnumConverting {<a name="line.68"></a>
+<FONT color="green">069</FONT>                    INCOMING(1),<a name="line.69"></a>
+<FONT color="green">070</FONT>                    OUTGOING(2);<a name="line.70"></a>
+<FONT color="green">071</FONT>                    private final int key;<a name="line.71"></a>
+<FONT color="green">072</FONT>                    Type(int key) {<a name="line.72"></a>
+<FONT color="green">073</FONT>                            this.key = key;<a name="line.73"></a>
+<FONT color="green">074</FONT>                    };<a name="line.74"></a>
+<FONT color="green">075</FONT>                    public int getId()   { return key; }<a name="line.75"></a>
+<FONT color="green">076</FONT>                    public EnumConverting getDefault() { return INCOMING; }<a name="line.76"></a>
+<FONT color="green">077</FONT>                    public EnumConverting convert(int from) { return Type.get(from); }<a name="line.77"></a>
+<FONT color="green">078</FONT>                    public EnumConverting[] getArray(final int size) { return new Type[size]; }<a name="line.78"></a>
+<FONT color="green">079</FONT>                    public static Type get(int from) {<a name="line.79"></a>
+<FONT color="green">080</FONT>                            switch (from) {<a name="line.80"></a>
+<FONT color="green">081</FONT>                            case 1: return INCOMING;<a name="line.81"></a>
+<FONT color="green">082</FONT>                            case 2: return OUTGOING;<a name="line.82"></a>
+<FONT color="green">083</FONT>                            }<a name="line.83"></a>
+<FONT color="green">084</FONT>                            return INCOMING;<a name="line.84"></a>
+<FONT color="green">085</FONT>                    }<a name="line.85"></a>
+<FONT color="green">086</FONT>                    public static final int INCOMING_VALUE = 1;<a name="line.86"></a>
+<FONT color="green">087</FONT>                    public static final int OUTGOING_VALUE = 2;<a name="line.87"></a>
+<FONT color="green">088</FONT>            }<a name="line.88"></a>
+<FONT color="green">089</FONT>            /** Recognized values for the P_STATUS property. Reflects current state of this Transfer.  */<a name="line.89"></a>
+<FONT color="green">090</FONT>            public enum Status implements EnumConverting {<a name="line.90"></a>
+<FONT color="green">091</FONT>                    /** The file has either not been posted (sent) (OUTGOING), or not accepted (received) (INCOMING).  */<a name="line.91"></a>
+<FONT color="green">092</FONT>                    NEW                      (0),<a name="line.92"></a>
+<FONT color="green">093</FONT>                    /** A temporary state that transitions either into TRANSFERRING (relayed or direct) or to FAILED. For unknown reasons, outgoing transfers tend go into this state twice - immediately before the actual data transfer starts and immediately after it ends.  */<a name="line.93"></a>
+<FONT color="green">094</FONT>                    CONNECTING               (1),<a name="line.94"></a>
+<FONT color="green">095</FONT>                    /** The files have been posted but the recipient has not yet accepted (or has declined) the transfer.  */<a name="line.95"></a>
+<FONT color="green">096</FONT>                    WAITING_FOR_ACCEPT       (2),<a name="line.96"></a>
+<FONT color="green">097</FONT>                    /** The transfer has been accepted and file data is being sent/received. Periodic updates of P_BYTESTRANSFERRED property should occur.  */<a name="line.97"></a>
+<FONT color="green">098</FONT>                    TRANSFERRING             (3),<a name="line.98"></a>
+<FONT color="green">099</FONT>                    /** The transfer has been accepted and file data is being sent/received but is going over at least one relay. Since relayed transfers tend to be significantly slower than direct transfers, you might want to differentiate the two in your UI and notify the user that relayed transfer typically take significantly longer to finish.  */<a name="line.99"></a>
+<FONT color="green">100</FONT>                    TRANSFERRING_OVER_RELAY  (4),<a name="line.100"></a>
+<FONT color="green">101</FONT>                    /** The local user (either the sender or a receiver) has paused the transfer.  */<a name="line.101"></a>
+<FONT color="green">102</FONT>                    PAUSED                   (5),<a name="line.102"></a>
+<FONT color="green">103</FONT>                    /** A remote user has paused the transfer. For senders, a receiver has paused the transfer; for receivers, the sender has paused the transfer.  */<a name="line.103"></a>
+<FONT color="green">104</FONT>                    REMOTELY_PAUSED          (6),<a name="line.104"></a>
+<FONT color="green">105</FONT>                    /** Local side (either sender or receiver) has canceled the transfer. This is a final state of the STATE property.  */<a name="line.105"></a>
+<FONT color="green">106</FONT>                    CANCELLED                (7),<a name="line.106"></a>
+<FONT color="green">107</FONT>                    /** File transfer has completed. This is a terminal state.  */<a name="line.107"></a>
+<FONT color="green">108</FONT>                    COMPLETED                (8),<a name="line.108"></a>
+<FONT color="green">109</FONT>                    /** File transfer has failed. This is a terminal state. UI should provide feedback, based on value of P_FAILUREREASON.  */<a name="line.109"></a>
+<FONT color="green">110</FONT>                    FAILED                   (9),<a name="line.110"></a>
+<FONT color="green">111</FONT>                    /** Transfer whose existence has been hinted by corresponding chat message, but which is yet to arrive.  */<a name="line.111"></a>
+<FONT color="green">112</FONT>                    PLACEHOLDER              (10),<a name="line.112"></a>
+<FONT color="green">113</FONT>                    /** Outgoing transfer object from another instance of the same account as current local login, running on another system. Hinted through chat message - only implies an offer was made; not necessarily accepted, failed, or completed.   */<a name="line.113"></a>
+<FONT color="green">114</FONT>                    OFFER_FROM_OTHER_INSTANCE(11),<a name="line.114"></a>
+<FONT color="green">115</FONT>                    /** Remote side (either sender or receiver) has canceled the transfer. This is a final state of the STATE property.  */<a name="line.115"></a>
+<FONT color="green">116</FONT>                    CANCELLED_BY_REMOTE      (12);<a name="line.116"></a>
+<FONT color="green">117</FONT>                    private final int key;<a name="line.117"></a>
+<FONT color="green">118</FONT>                    Status(int key) {<a name="line.118"></a>
+<FONT color="green">119</FONT>                            this.key = key;<a name="line.119"></a>
+<FONT color="green">120</FONT>                    };<a name="line.120"></a>
+<FONT color="green">121</FONT>                    public int getId()   { return key; }<a name="line.121"></a>
+<FONT color="green">122</FONT>                    public EnumConverting getDefault() { return NEW; }<a name="line.122"></a>
+<FONT color="green">123</FONT>                    public EnumConverting convert(int from) { return Status.get(from); }<a name="line.123"></a>
+<FONT color="green">124</FONT>                    public EnumConverting[] getArray(final int size) { return new Status[size]; }<a name="line.124"></a>
+<FONT color="green">125</FONT>                    public static Status get(int from) {<a name="line.125"></a>
+<FONT color="green">126</FONT>                            switch (from) {<a name="line.126"></a>
+<FONT color="green">127</FONT>                            case  0: return NEW;<a name="line.127"></a>
+<FONT color="green">128</FONT>                            case  1: return CONNECTING;<a name="line.128"></a>
+<FONT color="green">129</FONT>                            case  2: return WAITING_FOR_ACCEPT;<a name="line.129"></a>
+<FONT color="green">130</FONT>                            case  3: return TRANSFERRING;<a name="line.130"></a>
+<FONT color="green">131</FONT>                            case  4: return TRANSFERRING_OVER_RELAY;<a name="line.131"></a>
+<FONT color="green">132</FONT>                            case  5: return PAUSED;                 case  6: return REMOTELY_PAUSED;<a name="line.132"></a>
+<FONT color="green">133</FONT>                            case  7: return CANCELLED;<a name="line.133"></a>
+<FONT color="green">134</FONT>                            case  8: return COMPLETED;<a name="line.134"></a>
+<FONT color="green">135</FONT>                            case  9: return FAILED;<a name="line.135"></a>
+<FONT color="green">136</FONT>                            case 10: return PLACEHOLDER;<a name="line.136"></a>
+<FONT color="green">137</FONT>                            case 11: return OFFER_FROM_OTHER_INSTANCE;<a name="line.137"></a>
+<FONT color="green">138</FONT>                            case 12: return CANCELLED_BY_REMOTE;<a name="line.138"></a>
+<FONT color="green">139</FONT>                            }<a name="line.139"></a>
+<FONT color="green">140</FONT>                            return NEW;<a name="line.140"></a>
+<FONT color="green">141</FONT>                    }<a name="line.141"></a>
+<FONT color="green">142</FONT>                    public static final int NEW_VALUE                       =  0;<a name="line.142"></a>
+<FONT color="green">143</FONT>                    public static final int CONNECTING_VALUE                =  1;<a name="line.143"></a>
+<FONT color="green">144</FONT>                    public static final int WAITING_FOR_ACCEPT_VALUE        =  2;<a name="line.144"></a>
+<FONT color="green">145</FONT>                    public static final int TRANSFERRING_VALUE              =  3;<a name="line.145"></a>
+<FONT color="green">146</FONT>                    public static final int TRANSFERRING_OVER_RELAY_VALUE   =  4;<a name="line.146"></a>
+<FONT color="green">147</FONT>                    public static final int PAUSED_VALUE                    =  5;<a name="line.147"></a>
+<FONT color="green">148</FONT>                    public static final int REMOTELY_PAUSED_VALUE           =  6;<a name="line.148"></a>
+<FONT color="green">149</FONT>                    public static final int CANCELLED_VALUE                 =  7;<a name="line.149"></a>
+<FONT color="green">150</FONT>                    public static final int COMPLETED_VALUE                 =  8;<a name="line.150"></a>
+<FONT color="green">151</FONT>                    public static final int FAILED_VALUE                    =  9;<a name="line.151"></a>
+<FONT color="green">152</FONT>                    public static final int PLACEHOLDER_VALUE               = 10;<a name="line.152"></a>
+<FONT color="green">153</FONT>                    public static final int OFFER_FROM_OTHER_INSTANCE_VALUE = 11;<a name="line.153"></a>
+<FONT color="green">154</FONT>                    public static final int CANCELLED_BY_REMOTE_VALUE       = 12;<a name="line.154"></a>
+<FONT color="green">155</FONT>            }<a name="line.155"></a>
+<FONT color="green">156</FONT>            public enum FailureReason implements EnumConverting {<a name="line.156"></a>
+<FONT color="green">157</FONT>                    SENDER_NOT_AUTHORISED      (1),<a name="line.157"></a>
+<FONT color="green">158</FONT>                    REMOTELY_CANCELLED         (2),<a name="line.158"></a>
+<FONT color="green">159</FONT>                    FAILED_READ                (3),<a name="line.159"></a>
+<FONT color="green">160</FONT>                    FAILED_REMOTE_READ         (4),<a name="line.160"></a>
+<FONT color="green">161</FONT>                    FAILED_WRITE               (5),<a name="line.161"></a>
+<FONT color="green">162</FONT>                    FAILED_REMOTE_WRITE        (6),<a name="line.162"></a>
+<FONT color="green">163</FONT>                    REMOTE_DOES_NOT_SUPPORT_FT (7),<a name="line.163"></a>
+<FONT color="green">164</FONT>                    REMOTE_OFFLINE_FOR_TOO_LONG(8),<a name="line.164"></a>
+<FONT color="green">165</FONT>                    TOO_MANY_PARALLEL          (9),<a name="line.165"></a>
+<FONT color="green">166</FONT>                    PLACEHOLDER_TIMEOUT        (10);<a name="line.166"></a>
+<FONT color="green">167</FONT>                    private final int key;<a name="line.167"></a>
+<FONT color="green">168</FONT>                    FailureReason(int key) {<a name="line.168"></a>
+<FONT color="green">169</FONT>                            this.key = key;<a name="line.169"></a>
+<FONT color="green">170</FONT>                    };<a name="line.170"></a>
+<FONT color="green">171</FONT>                    public int getId()   { return key; }<a name="line.171"></a>
+<FONT color="green">172</FONT>                    public EnumConverting getDefault() { return SENDER_NOT_AUTHORISED; }<a name="line.172"></a>
+<FONT color="green">173</FONT>                    public EnumConverting convert(int from) { return FailureReason.get(from); }<a name="line.173"></a>
+<FONT color="green">174</FONT>                    public EnumConverting[] getArray(final int size) { return new FailureReason[size]; }<a name="line.174"></a>
+<FONT color="green">175</FONT>                    public static FailureReason get(int from) {<a name="line.175"></a>
+<FONT color="green">176</FONT>                            switch (from) {<a name="line.176"></a>
+<FONT color="green">177</FONT>                            case  1: return SENDER_NOT_AUTHORISED;<a name="line.177"></a>
+<FONT color="green">178</FONT>                            case  2: return REMOTELY_CANCELLED;<a name="line.178"></a>
+<FONT color="green">179</FONT>                            case  3: return FAILED_READ;<a name="line.179"></a>
+<FONT color="green">180</FONT>                            case  4: return FAILED_REMOTE_READ;<a name="line.180"></a>
+<FONT color="green">181</FONT>                            case  5: return FAILED_WRITE;<a name="line.181"></a>
+<FONT color="green">182</FONT>                            case  6: return FAILED_REMOTE_WRITE;<a name="line.182"></a>
+<FONT color="green">183</FONT>                            case  7: return REMOTE_DOES_NOT_SUPPORT_FT;<a name="line.183"></a>
+<FONT color="green">184</FONT>                            case  8: return REMOTE_OFFLINE_FOR_TOO_LONG;<a name="line.184"></a>
+<FONT color="green">185</FONT>                            case  9: return TOO_MANY_PARALLEL;<a name="line.185"></a>
+<FONT color="green">186</FONT>                            case 10: return PLACEHOLDER_TIMEOUT;<a name="line.186"></a>
+<FONT color="green">187</FONT>                            }<a name="line.187"></a>
+<FONT color="green">188</FONT>                            return SENDER_NOT_AUTHORISED;<a name="line.188"></a>
+<FONT color="green">189</FONT>                    }<a name="line.189"></a>
+<FONT color="green">190</FONT>                    public static final int SENDER_NOT_AUTHORISED_VALUE       =  1;<a name="line.190"></a>
+<FONT color="green">191</FONT>                    public static final int REMOTELY_CANCELLED_VALUE          =  2;<a name="line.191"></a>
+<FONT color="green">192</FONT>                    public static final int FAILED_READ_VALUE                 =  3;<a name="line.192"></a>
+<FONT color="green">193</FONT>                    public static final int FAILED_REMOTE_READ_VALUE          =  4;<a name="line.193"></a>
+<FONT color="green">194</FONT>                    public static final int FAILED_WRITE_VALUE                =  5;<a name="line.194"></a>
+<FONT color="green">195</FONT>                    public static final int FAILED_REMOTE_WRITE_VALUE         =  6;<a name="line.195"></a>
+<FONT color="green">196</FONT>                    public static final int REMOTE_DOES_NOT_SUPPORT_FT_VALUE  =  7;<a name="line.196"></a>
+<FONT color="green">197</FONT>                    public static final int REMOTE_OFFLINE_FOR_TOO_LONG_VALUE =  8;<a name="line.197"></a>
+<FONT color="green">198</FONT>                    public static final int TOO_MANY_PARALLEL_VALUE           =  9;<a name="line.198"></a>
+<FONT color="green">199</FONT>                    public static final int PLACEHOLDER_TIMEOUT_VALUE         = 10;<a name="line.199"></a>
+<FONT color="green">200</FONT>            }<a name="line.200"></a>
+<FONT color="green">201</FONT>            private final static byte[] P_TYPE_req = {(byte) 90,(byte) 71,(byte) 80,(byte) 93,(byte) 6};<a name="line.201"></a>
+<FONT color="green">202</FONT>            private final static byte[] P_PARTNER_HANDLE_req = {(byte) 90,(byte) 71,(byte) 81,(byte) 93,(byte) 6};<a name="line.202"></a>
+<FONT color="green">203</FONT>            private final static byte[] P_PARTNER_DISPLAY_NAME_req = {(byte) 90,(byte) 71,(byte) 82,(byte) 93,(byte) 6};<a name="line.203"></a>
+<FONT color="green">204</FONT>            private final static byte[] P_STATUS_req = {(byte) 90,(byte) 71,(byte) 83,(byte) 93,(byte) 6};<a name="line.204"></a>
+<FONT color="green">205</FONT>            private final static byte[] P_FAILURE_REASON_req = {(byte) 90,(byte) 71,(byte) 84,(byte) 93,(byte) 6};<a name="line.205"></a>
+<FONT color="green">206</FONT>            private final static byte[] P_START_TIME_req = {(byte) 90,(byte) 71,(byte) 85,(byte) 93,(byte) 6};<a name="line.206"></a>
+<FONT color="green">207</FONT>            private final static byte[] P_FINISH_TIME_req = {(byte) 90,(byte) 71,(byte) 86,(byte) 93,(byte) 6};<a name="line.207"></a>
+<FONT color="green">208</FONT>            private final static byte[] P_FILE_PATH_req = {(byte) 90,(byte) 71,(byte) 87,(byte) 93,(byte) 6};<a name="line.208"></a>
+<FONT color="green">209</FONT>            private final static byte[] P_FILE_NAME_req = {(byte) 90,(byte) 71,(byte) 88,(byte) 93,(byte) 6};<a name="line.209"></a>
+<FONT color="green">210</FONT>            private final static byte[] P_FILE_SIZE_req = {(byte) 90,(byte) 71,(byte) 89,(byte) 93,(byte) 6};<a name="line.210"></a>
+<FONT color="green">211</FONT>            private final static byte[] P_BYTES_TRANSFERRED_req = {(byte) 90,(byte) 71,(byte) 90,(byte) 93,(byte) 6};<a name="line.211"></a>
+<FONT color="green">212</FONT>            private final static byte[] P_BYTES_PER_SECOND_req = {(byte) 90,(byte) 71,(byte) 91,(byte) 93,(byte) 6};<a name="line.212"></a>
+<FONT color="green">213</FONT>            private final static byte[] P_CHAT_MSG_GUID_req = {(byte) 90,(byte) 71,(byte) 92,(byte) 93,(byte) 6};<a name="line.213"></a>
+<FONT color="green">214</FONT>            private final static byte[] P_CHAT_MSG_INDEX_req = {(byte) 90,(byte) 71,(byte) 93,(byte) 93,(byte) 6};<a name="line.214"></a>
+<FONT color="green">215</FONT>            private final static byte[] P_CONVERSATION_req = {(byte) 90,(byte) 71,(byte) 98,(byte) 93,(byte) 6};<a name="line.215"></a>
+<FONT color="green">216</FONT>            /** Properties of the Transfer class */<a name="line.216"></a>
+<FONT color="green">217</FONT>            public enum Property implements PropertyEnumConverting {<a name="line.217"></a>
+<FONT color="green">218</FONT>                    P_UNKNOWN             (0,0,null,0,null),<a name="line.218"></a>
+<FONT color="green">219</FONT>                    P_TYPE                (80, 1, P_TYPE_req, 0, Type.get(0)),<a name="line.219"></a>
+<FONT color="green">220</FONT>                    P_PARTNER_HANDLE      (81, 2, P_PARTNER_HANDLE_req, 0, null),<a name="line.220"></a>
+<FONT color="green">221</FONT>                    P_PARTNER_DISPLAY_NAME(82, 3, P_PARTNER_DISPLAY_NAME_req, 0, null),<a name="line.221"></a>
+<FONT color="green">222</FONT>                    P_STATUS              (83, 4, P_STATUS_req, 0, Status.get(0)),<a name="line.222"></a>
+<FONT color="green">223</FONT>                    P_FAILURE_REASON      (84, 5, P_FAILURE_REASON_req, 0, FailureReason.get(0)),<a name="line.223"></a>
+<FONT color="green">224</FONT>                    P_START_TIME          (85, 6, P_START_TIME_req, 0, null),<a name="line.224"></a>
+<FONT color="green">225</FONT>                    P_FINISH_TIME         (86, 7, P_FINISH_TIME_req, 0, null),<a name="line.225"></a>
+<FONT color="green">226</FONT>                    P_FILE_PATH           (87, 8, P_FILE_PATH_req, 0, null),<a name="line.226"></a>
+<FONT color="green">227</FONT>                    P_FILE_NAME           (88, 9, P_FILE_NAME_req, 0, null),<a name="line.227"></a>
+<FONT color="green">228</FONT>                    P_FILE_SIZE           (89, 10, P_FILE_SIZE_req, 0, null),<a name="line.228"></a>
+<FONT color="green">229</FONT>                    P_BYTES_TRANSFERRED   (90, 11, P_BYTES_TRANSFERRED_req, 0, null),<a name="line.229"></a>
+<FONT color="green">230</FONT>                    P_BYTES_PER_SECOND    (91, 12, P_BYTES_PER_SECOND_req, 0, null),<a name="line.230"></a>
+<FONT color="green">231</FONT>                    P_CHAT_MSG_GUID       (92, 13, P_CHAT_MSG_GUID_req, 0, null),<a name="line.231"></a>
+<FONT color="green">232</FONT>                    P_CHAT_MSG_INDEX      (93, 14, P_CHAT_MSG_INDEX_req, 0, null),<a name="line.232"></a>
+<FONT color="green">233</FONT>                    P_CONVERSATION        (98, 15, P_CONVERSATION_req, 18, null);<a name="line.233"></a>
+<FONT color="green">234</FONT>                    private final int    key;<a name="line.234"></a>
+<FONT color="green">235</FONT>                    private final int    idx;<a name="line.235"></a>
+<FONT color="green">236</FONT>                    private final byte[] req;<a name="line.236"></a>
+<FONT color="green">237</FONT>                    private final int    mod;<a name="line.237"></a>
+<FONT color="green">238</FONT>                    private final EnumConverting enumConverter;<a name="line.238"></a>
+<FONT color="green">239</FONT>                    Property(int key, int idx, byte[] req, int mod, EnumConverting converter) {<a name="line.239"></a>
+<FONT color="green">240</FONT>                            this.key = key;<a name="line.240"></a>
+<FONT color="green">241</FONT>                            this.idx = idx;<a name="line.241"></a>
+<FONT color="green">242</FONT>                            this.req = req;<a name="line.242"></a>
+<FONT color="green">243</FONT>                            this.mod = mod;<a name="line.243"></a>
+<FONT color="green">244</FONT>                            this.enumConverter = converter;<a name="line.244"></a>
+<FONT color="green">245</FONT>                    };<a name="line.245"></a>
+<FONT color="green">246</FONT>                    public boolean  isCached()    { return idx &gt; 0;   }<a name="line.246"></a>
+<FONT color="green">247</FONT>                    public int      getIdx()      { return idx;       }<a name="line.247"></a>
+<FONT color="green">248</FONT>                    public int      getId()       { return key;       }<a name="line.248"></a>
+<FONT color="green">249</FONT>                    public byte[]   getRequest()  { return req;       }<a name="line.249"></a>
+<FONT color="green">250</FONT>                    public EnumConverting getDefault()  { return P_UNKNOWN; }<a name="line.250"></a>
+<FONT color="green">251</FONT>                    public int      getModuleId() { return mod;       }<a name="line.251"></a>
+<FONT color="green">252</FONT>                    public EnumConverting getEnumConverter()    { return enumConverter;   }<a name="line.252"></a>
+<FONT color="green">253</FONT>                    public EnumConverting convert(final int from) { return Property.get(from); }<a name="line.253"></a>
+<FONT color="green">254</FONT>                    public EnumConverting[] getArray(final int size) { return new Property[size]; }<a name="line.254"></a>
+<FONT color="green">255</FONT>                    public static Property get(final int from) {<a name="line.255"></a>
+<FONT color="green">256</FONT>                            switch (from) {<a name="line.256"></a>
+<FONT color="green">257</FONT>                            case 80: return P_TYPE;<a name="line.257"></a>
+<FONT color="green">258</FONT>                            case 81: return P_PARTNER_HANDLE;<a name="line.258"></a>
+<FONT color="green">259</FONT>                            case 82: return P_PARTNER_DISPLAY_NAME;<a name="line.259"></a>
+<FONT color="green">260</FONT>                            case 83: return P_STATUS;<a name="line.260"></a>
+<FONT color="green">261</FONT>                            case 84: return P_FAILURE_REASON;<a name="line.261"></a>
+<FONT color="green">262</FONT>                            case 85: return P_START_TIME;<a name="line.262"></a>
+<FONT color="green">263</FONT>                            case 86: return P_FINISH_TIME;<a name="line.263"></a>
+<FONT color="green">264</FONT>                            case 87: return P_FILE_PATH;<a name="line.264"></a>
+<FONT color="green">265</FONT>                            case 88: return P_FILE_NAME;<a name="line.265"></a>
+<FONT color="green">266</FONT>                            case 89: return P_FILE_SIZE;<a name="line.266"></a>
+<FONT color="green">267</FONT>                            case 90: return P_BYTES_TRANSFERRED;<a name="line.267"></a>
+<FONT color="green">268</FONT>                            case 91: return P_BYTES_PER_SECOND;<a name="line.268"></a>
+<FONT color="green">269</FONT>                            case 92: return P_CHAT_MSG_GUID;<a name="line.269"></a>
+<FONT color="green">270</FONT>                            case 93: return P_CHAT_MSG_INDEX;<a name="line.270"></a>
+<FONT color="green">271</FONT>                            case 98: return P_CONVERSATION;<a name="line.271"></a>
+<FONT color="green">272</FONT>                            }<a name="line.272"></a>
+<FONT color="green">273</FONT>                            return P_UNKNOWN;<a name="line.273"></a>
+<FONT color="green">274</FONT>                    }<a name="line.274"></a>
+<FONT color="green">275</FONT>                    public static final int P_TYPE_VALUE                 = 80;<a name="line.275"></a>
+<FONT color="green">276</FONT>                    public static final int P_PARTNER_HANDLE_VALUE       = 81;<a name="line.276"></a>
+<FONT color="green">277</FONT>                    public static final int P_PARTNER_DISPLAY_NAME_VALUE = 82;<a name="line.277"></a>
+<FONT color="green">278</FONT>                    public static final int P_STATUS_VALUE               = 83;<a name="line.278"></a>
+<FONT color="green">279</FONT>                    public static final int P_FAILURE_REASON_VALUE       = 84;<a name="line.279"></a>
+<FONT color="green">280</FONT>                    public static final int P_START_TIME_VALUE           = 85;<a name="line.280"></a>
+<FONT color="green">281</FONT>                    public static final int P_FINISH_TIME_VALUE          = 86;<a name="line.281"></a>
+<FONT color="green">282</FONT>                    public static final int P_FILE_PATH_VALUE            = 87;<a name="line.282"></a>
+<FONT color="green">283</FONT>                    public static final int P_FILE_NAME_VALUE            = 88;<a name="line.283"></a>
+<FONT color="green">284</FONT>                    public static final int P_FILE_SIZE_VALUE            = 89;<a name="line.284"></a>
+<FONT color="green">285</FONT>                    public static final int P_BYTES_TRANSFERRED_VALUE    = 90;<a name="line.285"></a>
+<FONT color="green">286</FONT>                    public static final int P_BYTES_PER_SECOND_VALUE     = 91;<a name="line.286"></a>
+<FONT color="green">287</FONT>                    public static final int P_CHAT_MSG_GUID_VALUE        = 92;<a name="line.287"></a>
+<FONT color="green">288</FONT>                    public static final int P_CHAT_MSG_INDEX_VALUE       = 93;<a name="line.288"></a>
+<FONT color="green">289</FONT>                    public static final int P_CONVERSATION_VALUE         = 98;<a name="line.289"></a>
+<FONT color="green">290</FONT>            }<a name="line.290"></a>
+<FONT color="green">291</FONT>            private final static byte[] accept_req = {(byte) 90,(byte) 82,(byte) 6,(byte) 3};<a name="line.291"></a>
+<FONT color="green">292</FONT>            /** Accepts an incoming file transfer and saves it to specified file on the local file system. If the specified file exists, SkypeKit will silently overwrite it. Your UI should prompting the user for confirmation in this case and provide a means for canceling the file transfer or specifying a different target file.     * @param filenameWithPath Where on the local file system to save the file being transferred. Note that you should specify the path as being fully-qualified. Otherwise, SkypeKit will be assume it to be relative to the SkypeKit runtime path, since the method is actually executed in the runtime context. <a name="line.292"></a>
+<FONT color="green">293</FONT>             * @return success Set to true if the specified target file was successfully created on the local file system -and- the initial write(s) succeeded. However, the transfer itself can subsequently fail before completion due to its being canceled (either locally or remotely), network failure, local file system space/write issues, and so forth. <a name="line.293"></a>
+<FONT color="green">294</FONT>             */<a name="line.294"></a>
+<FONT color="green">295</FONT>            public boolean accept(String filenameWithPath) {<a name="line.295"></a>
+<FONT color="green">296</FONT>                    try {<a name="line.296"></a>
+<FONT color="green">297</FONT>                            return sidDoRequest(accept_req)<a name="line.297"></a>
+<FONT color="green">298</FONT>                            .addFilenameParm(1, filenameWithPath)<a name="line.298"></a>
+<FONT color="green">299</FONT>                            .endRequest().getBoolParm(1, true);<a name="line.299"></a>
+<FONT color="green">300</FONT>                    } catch(IOException e) {<a name="line.300"></a>
+<FONT color="green">301</FONT>                            mSidRoot.sidOnFatalError(e);<a name="line.301"></a>
+<FONT color="green">302</FONT>                            return false;<a name="line.302"></a>
+<FONT color="green">303</FONT>                    }<a name="line.303"></a>
+<FONT color="green">304</FONT>            }<a name="line.304"></a>
+<FONT color="green">305</FONT>            private final static byte[] pause_req = {(byte) 90,(byte) 82,(byte) 6,(byte) 4};<a name="line.305"></a>
+<FONT color="green">306</FONT>            /** Temporarily pauses an in-progress incoming or outgoing file transfer. For incoming transfers, only this affects the sender and the invoking recipient only. For outgoing transfers, this affects the sender and all recipients. <a name="line.306"></a>
+<FONT color="green">307</FONT>             */<a name="line.307"></a>
+<FONT color="green">308</FONT>            public void pause() {<a name="line.308"></a>
+<FONT color="green">309</FONT>                    try {<a name="line.309"></a>
+<FONT color="green">310</FONT>                            sidDoRequest(pause_req)<a name="line.310"></a>
+<FONT color="green">311</FONT>                            .endOneWay();<a name="line.311"></a>
+<FONT color="green">312</FONT>                    } catch(IOException e) {<a name="line.312"></a>
+<FONT color="green">313</FONT>                            mSidRoot.sidOnFatalError(e);<a name="line.313"></a>
+<FONT color="green">314</FONT>                    }<a name="line.314"></a>
+<FONT color="green">315</FONT>            }<a name="line.315"></a>
+<FONT color="green">316</FONT>            private final static byte[] resume_req = {(byte) 90,(byte) 82,(byte) 6,(byte) 5};<a name="line.316"></a>
+<FONT color="green">317</FONT>            /** Resumes a previously paused file transfer. <a name="line.317"></a>
+<FONT color="green">318</FONT>             */<a name="line.318"></a>
+<FONT color="green">319</FONT>            public void resume() {<a name="line.319"></a>
+<FONT color="green">320</FONT>                    try {<a name="line.320"></a>
+<FONT color="green">321</FONT>                            sidDoRequest(resume_req)<a name="line.321"></a>
+<FONT color="green">322</FONT>                            .endOneWay();<a name="line.322"></a>
+<FONT color="green">323</FONT>                    } catch(IOException e) {<a name="line.323"></a>
+<FONT color="green">324</FONT>                            mSidRoot.sidOnFatalError(e);<a name="line.324"></a>
+<FONT color="green">325</FONT>                    }<a name="line.325"></a>
+<FONT color="green">326</FONT>            }<a name="line.326"></a>
+<FONT color="green">327</FONT>            private final static byte[] cancel_req = {(byte) 90,(byte) 82,(byte) 6,(byte) 6};<a name="line.327"></a>
+<FONT color="green">328</FONT>            /** Cancels an in-progress file transfer. Transfer.STATUS will transition to CANCELLED for incoming file transfers and to CANCELLED_BY_REMOTE for outgoing transfers. <a name="line.328"></a>
+<FONT color="green">329</FONT>             */<a name="line.329"></a>
+<FONT color="green">330</FONT>            public void cancel() {<a name="line.330"></a>
+<FONT color="green">331</FONT>                    try {<a name="line.331"></a>
+<FONT color="green">332</FONT>                            sidDoRequest(cancel_req)<a name="line.332"></a>
+<FONT color="green">333</FONT>                            .endOneWay();<a name="line.333"></a>
+<FONT color="green">334</FONT>                    } catch(IOException e) {<a name="line.334"></a>
+<FONT color="green">335</FONT>                            mSidRoot.sidOnFatalError(e);<a name="line.335"></a>
+<FONT color="green">336</FONT>                    }<a name="line.336"></a>
+<FONT color="green">337</FONT>            }<a name="line.337"></a>
+<FONT color="green">338</FONT>            /***<a name="line.338"></a>
+<FONT color="green">339</FONT>             * generic multiget of a list of Property<a name="line.339"></a>
+<FONT color="green">340</FONT>             * @param requested the list of requested properties of Transfer<a name="line.340"></a>
+<FONT color="green">341</FONT>             * @return SidGetResponding<a name="line.341"></a>
+<FONT color="green">342</FONT>             */<a name="line.342"></a>
+<FONT color="green">343</FONT>            public SidGetResponding sidMultiGet(Property[] requested) {<a name="line.343"></a>
+<FONT color="green">344</FONT>                    return super.sidMultiGet(requested);<a name="line.344"></a>
+<FONT color="green">345</FONT>            }<a name="line.345"></a>
+<FONT color="green">346</FONT>            /***<a name="line.346"></a>
+<FONT color="green">347</FONT>             * generic multiget of list of Property for a list of Transfer<a name="line.347"></a>
+<FONT color="green">348</FONT>             * @param requested the list of requested properties<a name="line.348"></a>
+<FONT color="green">349</FONT>             * @return SidGetResponding[] can be casted to (Transfer[]) if all properties are cached<a name="line.349"></a>
+<FONT color="green">350</FONT>             */<a name="line.350"></a>
+<FONT color="green">351</FONT>            static public SidGetResponding[] sidMultiGet(Property[] requested, Transfer[] objects) {<a name="line.351"></a>
+<FONT color="green">352</FONT>                    return SidObject.sidMultiGet(requested, objects);<a name="line.352"></a>
+<FONT color="green">353</FONT>            }<a name="line.353"></a>
+<FONT color="green">354</FONT>            /** INCOMING / OUTGOING  */<a name="line.354"></a>
+<FONT color="green">355</FONT>            public Type getType() {<a name="line.355"></a>
+<FONT color="green">356</FONT>                    synchronized(this) {<a name="line.356"></a>
+<FONT color="green">357</FONT>                            if ((mSidCached &amp; 0x1) != 0)<a name="line.357"></a>
+<FONT color="green">358</FONT>                                    return mType;<a name="line.358"></a>
+<FONT color="green">359</FONT>                    }<a name="line.359"></a>
+<FONT color="green">360</FONT>                    return (Type) sidRequestEnumProperty(Property.P_TYPE);<a name="line.360"></a>
+<FONT color="green">361</FONT>            }<a name="line.361"></a>
+<FONT color="green">362</FONT>            /** Skype Name of the remote party of the file transfer. If a file is posted in a conversation with more than one participant, Transfer objects are created for each of them - so a transfer is always to one single remote target.  */<a name="line.362"></a>
+<FONT color="green">363</FONT>            public String getPartnerHandle() {<a name="line.363"></a>
+<FONT color="green">364</FONT>                    synchronized(this) {<a name="line.364"></a>
+<FONT color="green">365</FONT>                            if ((mSidCached &amp; 0x2) != 0)<a name="line.365"></a>
+<FONT color="green">366</FONT>                                    return mPartnerHandle;<a name="line.366"></a>
+<FONT color="green">367</FONT>                    }<a name="line.367"></a>
+<FONT color="green">368</FONT>                    return sidRequestStringProperty(Property.P_PARTNER_HANDLE);<a name="line.368"></a>
+<FONT color="green">369</FONT>            }<a name="line.369"></a>
+<FONT color="green">370</FONT>            /** Display name of the remote participant.  */<a name="line.370"></a>
+<FONT color="green">371</FONT>            public String getPartnerDisplayName() {<a name="line.371"></a>
+<FONT color="green">372</FONT>                    synchronized(this) {<a name="line.372"></a>
+<FONT color="green">373</FONT>                            if ((mSidCached &amp; 0x4) != 0)<a name="line.373"></a>
+<FONT color="green">374</FONT>                                    return mPartnerDisplayName;<a name="line.374"></a>
+<FONT color="green">375</FONT>                    }<a name="line.375"></a>
+<FONT color="green">376</FONT>                    return sidRequestStringProperty(Property.P_PARTNER_DISPLAY_NAME);<a name="line.376"></a>
+<FONT color="green">377</FONT>            }<a name="line.377"></a>
+<FONT color="green">378</FONT>            /** Current state of the transfer  */<a name="line.378"></a>
+<FONT color="green">379</FONT>            public Status getStatus() {<a name="line.379"></a>
+<FONT color="green">380</FONT>                    synchronized(this) {<a name="line.380"></a>
+<FONT color="green">381</FONT>                            if ((mSidCached &amp; 0x8) != 0)<a name="line.381"></a>
+<FONT color="green">382</FONT>                                    return mStatus;<a name="line.382"></a>
+<FONT color="green">383</FONT>                    }<a name="line.383"></a>
+<FONT color="green">384</FONT>                    return (Status) sidRequestEnumProperty(Property.P_STATUS);<a name="line.384"></a>
+<FONT color="green">385</FONT>            }<a name="line.385"></a>
+<FONT color="green">386</FONT>            /** Set whenever P_STATUS transitions to FAILED.  */<a name="line.386"></a>
+<FONT color="green">387</FONT>            public FailureReason getFailureReason() {<a name="line.387"></a>
+<FONT color="green">388</FONT>                    synchronized(this) {<a name="line.388"></a>
+<FONT color="green">389</FONT>                            if ((mSidCached &amp; 0x10) != 0)<a name="line.389"></a>
+<FONT color="green">390</FONT>                                    return mFailureReason;<a name="line.390"></a>
+<FONT color="green">391</FONT>                    }<a name="line.391"></a>
+<FONT color="green">392</FONT>                    return (FailureReason) sidRequestEnumProperty(Property.P_FAILURE_REASON);<a name="line.392"></a>
+<FONT color="green">393</FONT>            }<a name="line.393"></a>
+<FONT color="green">394</FONT>            /** UNIX timestamp of when this Transfer instance was instantiated, not when the transfer process actually started (was accepted from receiver side). Do not use this property when calculate the data transfer speed! Instead, monitor changes to P_BYTESPERSECOND.  */<a name="line.394"></a>
+<FONT color="green">395</FONT>            public long getStartTime() {<a name="line.395"></a>
+<FONT color="green">396</FONT>                    synchronized(this) {<a name="line.396"></a>
+<FONT color="green">397</FONT>                            if ((mSidCached &amp; 0x20) != 0)<a name="line.397"></a>
+<FONT color="green">398</FONT>                                    return mStartTime;<a name="line.398"></a>
+<FONT color="green">399</FONT>                    }<a name="line.399"></a>
+<FONT color="green">400</FONT>                    return sidRequestTimestampProperty(Property.P_START_TIME);<a name="line.400"></a>
+<FONT color="green">401</FONT>            }<a name="line.401"></a>
+<FONT color="green">402</FONT>            /** UNIX timestamp of when this Transfer COMPLETED or FAILED. This property is never set if the receiving side (local or remote) canceled the transfer.  */<a name="line.402"></a>
+<FONT color="green">403</FONT>            public long getFinishTime() {<a name="line.403"></a>
+<FONT color="green">404</FONT>                    synchronized(this) {<a name="line.404"></a>
+<FONT color="green">405</FONT>                            if ((mSidCached &amp; 0x40) != 0)<a name="line.405"></a>
+<FONT color="green">406</FONT>                                    return mFinishTime;<a name="line.406"></a>
+<FONT color="green">407</FONT>                    }<a name="line.407"></a>
+<FONT color="green">408</FONT>                    return sidRequestTimestampProperty(Property.P_FINISH_TIME);<a name="line.408"></a>
+<FONT color="green">409</FONT>            }<a name="line.409"></a>
+<FONT color="green">410</FONT>            /** The path -and- filename of the file being transfered (typically fully qualified). For the receiver, SkypeKit sets this property upon acceptance of the incoming transfer. If not fully qualified, the path is assumed to be relative to the path of the SkypeKit runtime.  */<a name="line.410"></a>
+<FONT color="green">411</FONT>            public String getFilePath() {<a name="line.411"></a>
+<FONT color="green">412</FONT>                    synchronized(this) {<a name="line.412"></a>
+<FONT color="green">413</FONT>                            if ((mSidCached &amp; 0x80) != 0)<a name="line.413"></a>
+<FONT color="green">414</FONT>                                    return mFilePath;<a name="line.414"></a>
+<FONT color="green">415</FONT>                    }<a name="line.415"></a>
+<FONT color="green">416</FONT>                    return sidRequestStringProperty(Property.P_FILE_PATH);<a name="line.416"></a>
+<FONT color="green">417</FONT>            }<a name="line.417"></a>
+<FONT color="green">418</FONT>            /** The filename -only- of the file being transfered. The receiver side can use this property to pre-populate relevant UI components while prompting the user to accept the incoming transfer.  */<a name="line.418"></a>
+<FONT color="green">419</FONT>            public String getFileName() {<a name="line.419"></a>
+<FONT color="green">420</FONT>                    synchronized(this) {<a name="line.420"></a>
+<FONT color="green">421</FONT>                            if ((mSidCached &amp; 0x100) != 0)<a name="line.421"></a>
+<FONT color="green">422</FONT>                                    return mFileName;<a name="line.422"></a>
+<FONT color="green">423</FONT>                    }<a name="line.423"></a>
+<FONT color="green">424</FONT>                    return sidRequestStringProperty(Property.P_FILE_NAME);<a name="line.424"></a>
+<FONT color="green">425</FONT>            }<a name="line.425"></a>
+<FONT color="green">426</FONT>            /** The size of the file being transferred in bytes. Depending on the magnitude of this value, your UI might want to display the size in terms of kilobytes or even megabytes.  */<a name="line.426"></a>
+<FONT color="green">427</FONT>            public String getFileSize() {<a name="line.427"></a>
+<FONT color="green">428</FONT>                    synchronized(this) {<a name="line.428"></a>
+<FONT color="green">429</FONT>                            if ((mSidCached &amp; 0x200) != 0)<a name="line.429"></a>
+<FONT color="green">430</FONT>                                    return mFileSize;<a name="line.430"></a>
+<FONT color="green">431</FONT>                    }<a name="line.431"></a>
+<FONT color="green">432</FONT>                    return sidRequestStringProperty(Property.P_FILE_SIZE);<a name="line.432"></a>
+<FONT color="green">433</FONT>            }<a name="line.433"></a>
+<FONT color="green">434</FONT>            /**<a name="line.434"></a>
+<FONT color="green">435</FONT>             * The number of bytes already transferred. Calculate the percentage of the file transferred so far as: <a name="line.435"></a>
+<FONT color="green">436</FONT>             * @code <a name="line.436"></a>
+<FONT color="green">437</FONT>             * P_BYTESTRANSFERRED / (P_FILESIZE / 100);  <a name="line.437"></a>
+<FONT color="green">438</FONT>             * &lt;/CODE&gt; <a name="line.438"></a>
+<FONT color="green">439</FONT>             * <a name="line.439"></a>
+<FONT color="green">440</FONT>             * Use float variables to avoid problems with files smaller than 100 bytes! <a name="line.440"></a>
+<FONT color="green">441</FONT>             */<a name="line.441"></a>
+<FONT color="green">442</FONT>            public String getBytesTransferred() {<a name="line.442"></a>
+<FONT color="green">443</FONT>                    synchronized(this) {<a name="line.443"></a>
+<FONT color="green">444</FONT>                            if ((mSidCached &amp; 0x400) != 0)<a name="line.444"></a>
+<FONT color="green">445</FONT>                                    return mBytesTransferred;<a name="line.445"></a>
+<FONT color="green">446</FONT>                    }<a name="line.446"></a>
+<FONT color="green">447</FONT>                    return sidRequestStringProperty(Property.P_BYTES_TRANSFERRED);<a name="line.447"></a>
+<FONT color="green">448</FONT>            }<a name="line.448"></a>
+<FONT color="green">449</FONT>            /** Current data transfer speed in bytes per second. Typically, your UI will want to display this value as kilobytes per second (KBps).  */<a name="line.449"></a>
+<FONT color="green">450</FONT>            public int getBytesPerSecond() {<a name="line.450"></a>
+<FONT color="green">451</FONT>                    synchronized(this) {<a name="line.451"></a>
+<FONT color="green">452</FONT>                            if ((mSidCached &amp; 0x800) != 0)<a name="line.452"></a>
+<FONT color="green">453</FONT>                                    return mBytesPerSecond;<a name="line.453"></a>
+<FONT color="green">454</FONT>                    }<a name="line.454"></a>
+<FONT color="green">455</FONT>                    return sidRequestUintProperty(Property.P_BYTES_PER_SECOND);<a name="line.455"></a>
+<FONT color="green">456</FONT>            }<a name="line.456"></a>
+<FONT color="green">457</FONT>            /** The "global ID" of this Transfer's associated Message instance. GUIDs are shared across Skype client instances and across all users that can see this Message.  */<a name="line.457"></a>
+<FONT color="green">458</FONT>            public byte[] getChatMsgGuid() {<a name="line.458"></a>
+<FONT color="green">459</FONT>                    synchronized(this) {<a name="line.459"></a>
+<FONT color="green">460</FONT>                            if ((mSidCached &amp; 0x1000) != 0)<a name="line.460"></a>
+<FONT color="green">461</FONT>                                    return mChatMsgGuid;<a name="line.461"></a>
+<FONT color="green">462</FONT>                    }<a name="line.462"></a>
+<FONT color="green">463</FONT>                    return sidRequestBinaryProperty(Property.P_CHAT_MSG_GUID);<a name="line.463"></a>
+<FONT color="green">464</FONT>            }<a name="line.464"></a>
+<FONT color="green">465</FONT>            /** A more or less arbitrary index for ordering multiple file transfers within the UI.  */<a name="line.465"></a>
+<FONT color="green">466</FONT>            public int getChatMsgIndex() {<a name="line.466"></a>
+<FONT color="green">467</FONT>                    synchronized(this) {<a name="line.467"></a>
+<FONT color="green">468</FONT>                            if ((mSidCached &amp; 0x2000) != 0)<a name="line.468"></a>
+<FONT color="green">469</FONT>                                    return mChatMsgIndex;<a name="line.469"></a>
+<FONT color="green">470</FONT>                    }<a name="line.470"></a>
+<FONT color="green">471</FONT>                    return sidRequestUintProperty(Property.P_CHAT_MSG_INDEX);<a name="line.471"></a>
+<FONT color="green">472</FONT>            }<a name="line.472"></a>
+<FONT color="green">473</FONT>            /**<a name="line.473"></a>
+<FONT color="green">474</FONT>             * The "global ID" of this Transfer's associated Conversation (as chained through its associated Message). GUIDs are shared across Skype client instances and across all users that can see this Conversation. <a name="line.474"></a>
+<FONT color="green">475</FONT>             * <a name="line.475"></a>
+<FONT color="green">476</FONT>             * Note that currently SkypeKit sets this property for INCOMING file transfers only and returns 0 (zero) for all sending side transfers. This is a known bug. <a name="line.476"></a>
+<FONT color="green">477</FONT>             */<a name="line.477"></a>
+<FONT color="green">478</FONT>            public Conversation getConversation() {<a name="line.478"></a>
+<FONT color="green">479</FONT>                    synchronized(this) {<a name="line.479"></a>
+<FONT color="green">480</FONT>                            if ((mSidCached &amp; 0x4000) != 0)<a name="line.480"></a>
+<FONT color="green">481</FONT>                                    return mConversation;<a name="line.481"></a>
+<FONT color="green">482</FONT>                    }<a name="line.482"></a>
+<FONT color="green">483</FONT>                    return (Conversation) sidRequestObjectProperty(Property.P_CONVERSATION);<a name="line.483"></a>
+<FONT color="green">484</FONT>            }<a name="line.484"></a>
+<FONT color="green">485</FONT>            public String sidGetStringProperty(final PropertyEnumConverting prop) {<a name="line.485"></a>
+<FONT color="green">486</FONT>                    switch(prop.getId()) {<a name="line.486"></a>
+<FONT color="green">487</FONT>                    case 81:<a name="line.487"></a>
+<FONT color="green">488</FONT>                            return mPartnerHandle;<a name="line.488"></a>
+<FONT color="green">489</FONT>                    case 82:<a name="line.489"></a>
+<FONT color="green">490</FONT>                            return mPartnerDisplayName;<a name="line.490"></a>
+<FONT color="green">491</FONT>                    case 87:<a name="line.491"></a>
+<FONT color="green">492</FONT>                            return mFilePath;<a name="line.492"></a>
+<FONT color="green">493</FONT>                    case 88:<a name="line.493"></a>
+<FONT color="green">494</FONT>                            return mFileName;               case 89:<a name="line.494"></a>
+<FONT color="green">495</FONT>                            return mFileSize;<a name="line.495"></a>
+<FONT color="green">496</FONT>                    case 90:<a name="line.496"></a>
+<FONT color="green">497</FONT>                            return mBytesTransferred;<a name="line.497"></a>
+<FONT color="green">498</FONT>                    }<a name="line.498"></a>
+<FONT color="green">499</FONT>                    return "";<a name="line.499"></a>
+<FONT color="green">500</FONT>            }<a name="line.500"></a>
+<FONT color="green">501</FONT>            public SidObject sidGetObjectProperty(final PropertyEnumConverting prop) {<a name="line.501"></a>
+<FONT color="green">502</FONT>                    assert(prop.getId() == 98);<a name="line.502"></a>
+<FONT color="green">503</FONT>                    return mConversation;<a name="line.503"></a>
+<FONT color="green">504</FONT>            }<a name="line.504"></a>
+<FONT color="green">505</FONT>            public int sidGetIntProperty(final PropertyEnumConverting prop) {<a name="line.505"></a>
+<FONT color="green">506</FONT>                    switch(prop.getId()) {<a name="line.506"></a>
+<FONT color="green">507</FONT>                    case 91:<a name="line.507"></a>
+<FONT color="green">508</FONT>                            return mBytesPerSecond;<a name="line.508"></a>
+<FONT color="green">509</FONT>                    case 93:<a name="line.509"></a>
+<FONT color="green">510</FONT>                            return mChatMsgIndex;<a name="line.510"></a>
+<FONT color="green">511</FONT>                    }<a name="line.511"></a>
+<FONT color="green">512</FONT>                    return 0;<a name="line.512"></a>
+<FONT color="green">513</FONT>            }<a name="line.513"></a>
+<FONT color="green">514</FONT>            public EnumConverting sidGetEnumProperty(final PropertyEnumConverting prop) {<a name="line.514"></a>
+<FONT color="green">515</FONT>                    switch(prop.getId()) {<a name="line.515"></a>
+<FONT color="green">516</FONT>                    case 80:<a name="line.516"></a>
+<FONT color="green">517</FONT>                            return mType;<a name="line.517"></a>
+<FONT color="green">518</FONT>                    case 83:<a name="line.518"></a>
+<FONT color="green">519</FONT>                            return mStatus;<a name="line.519"></a>
+<FONT color="green">520</FONT>                    case 84:<a name="line.520"></a>
+<FONT color="green">521</FONT>                            return mFailureReason;<a name="line.521"></a>
+<FONT color="green">522</FONT>                    }<a name="line.522"></a>
+<FONT color="green">523</FONT>                    return null;<a name="line.523"></a>
+<FONT color="green">524</FONT>            }<a name="line.524"></a>
+<FONT color="green">525</FONT>            public byte[] sidGetBinaryProperty(final PropertyEnumConverting prop) {<a name="line.525"></a>
+<FONT color="green">526</FONT>                    assert(prop.getId() == 92);<a name="line.526"></a>
+<FONT color="green">527</FONT>                    return mChatMsgGuid;<a name="line.527"></a>
+<FONT color="green">528</FONT>            }<a name="line.528"></a>
+<FONT color="green">529</FONT>            public String getPropertyAsString(final int prop) {<a name="line.529"></a>
+<FONT color="green">530</FONT>                    switch (prop) {<a name="line.530"></a>
+<FONT color="green">531</FONT>                    case 80: return getType().toString();<a name="line.531"></a>
+<FONT color="green">532</FONT>                    case 81: return getPartnerHandle();<a name="line.532"></a>
+<FONT color="green">533</FONT>                    case 82: return getPartnerDisplayName();<a name="line.533"></a>
+<FONT color="green">534</FONT>                    case 83: return getStatus().toString();<a name="line.534"></a>
+<FONT color="green">535</FONT>                    case 84: return getFailureReason().toString();<a name="line.535"></a>
+<FONT color="green">536</FONT>                    case 87: return getFilePath();<a name="line.536"></a>
+<FONT color="green">537</FONT>                    case 88: return getFileName();<a name="line.537"></a>
+<FONT color="green">538</FONT>                    case 89: return getFileSize();<a name="line.538"></a>
+<FONT color="green">539</FONT>                    case 90: return getBytesTransferred();<a name="line.539"></a>
+<FONT color="green">540</FONT>                    case 91: return Integer.toString(getBytesPerSecond());<a name="line.540"></a>
+<FONT color="green">541</FONT>                    case 92: return "&lt;binary&gt;";<a name="line.541"></a>
+<FONT color="green">542</FONT>                    case 93: return Integer.toString(getChatMsgIndex());<a name="line.542"></a>
+<FONT color="green">543</FONT>                    case 98: return getConversation() != null ? Integer.toString(getConversation().getOid()) : "(null)";<a name="line.543"></a>
+<FONT color="green">544</FONT>                    }<a name="line.544"></a>
+<FONT color="green">545</FONT>                    return "&lt;unkown&gt;";<a name="line.545"></a>
+<FONT color="green">546</FONT>            }<a name="line.546"></a>
+<FONT color="green">547</FONT>            public String getPropertyAsString(final Property prop) {<a name="line.547"></a>
+<FONT color="green">548</FONT>                    return getPropertyAsString(prop.getId());<a name="line.548"></a>
+<FONT color="green">549</FONT>            }<a name="line.549"></a>
+<FONT color="green">550</FONT>            protected void sidOnChangedProperty(final int propertyId, final int value, final String svalue) {<a name="line.550"></a>
+<FONT color="green">551</FONT>                    final Property property = Property.get(propertyId);<a name="line.551"></a>
+<FONT color="green">552</FONT>                    if (property == Property.P_UNKNOWN) return;<a name="line.552"></a>
+<FONT color="green">553</FONT>                    final int idx = property.getIdx();<a name="line.553"></a>
+<FONT color="green">554</FONT>                    if (idx != 0) {<a name="line.554"></a>
+<FONT color="green">555</FONT>                            int bit  = 1&lt;&lt;((idx-1)%32);<a name="line.555"></a>
+<FONT color="green">556</FONT>                            synchronized (this) {<a name="line.556"></a>
+<FONT color="green">557</FONT>                                    mSidCached|=bit;<a name="line.557"></a>
+<FONT color="green">558</FONT>                                    switch (propertyId) {<a name="line.558"></a>
+<FONT color="green">559</FONT>                                    case 80: mType = Type.get(value); break;<a name="line.559"></a>
+<FONT color="green">560</FONT>                                    case 81:<a name="line.560"></a>
+<FONT color="green">561</FONT>                                            if (svalue != null) mPartnerHandle = svalue;<a name="line.561"></a>
+<FONT color="green">562</FONT>                                            else mSidCached &amp;=~bit;<a name="line.562"></a>
+<FONT color="green">563</FONT>                                            break;<a name="line.563"></a>
+<FONT color="green">564</FONT>                                    case 82:<a name="line.564"></a>
+<FONT color="green">565</FONT>                                            if (svalue != null) mPartnerDisplayName = svalue;<a name="line.565"></a>
+<FONT color="green">566</FONT>                                            else mSidCached &amp;=~bit;<a name="line.566"></a>
+<FONT color="green">567</FONT>                                            break;<a name="line.567"></a>
+<FONT color="green">568</FONT>                                    case 83: mStatus = Status.get(value); break;<a name="line.568"></a>
+<FONT color="green">569</FONT>                                    case 84: mFailureReason = FailureReason.get(value); break;<a name="line.569"></a>
+<FONT color="green">570</FONT>                                    case 87:<a name="line.570"></a>
+<FONT color="green">571</FONT>                                            if (svalue != null) mFilePath = svalue;<a name="line.571"></a>
+<FONT color="green">572</FONT>                                            else mSidCached &amp;=~bit;<a name="line.572"></a>
+<FONT color="green">573</FONT>                                            break;<a name="line.573"></a>
+<FONT color="green">574</FONT>                                    case 88:<a name="line.574"></a>
+<FONT color="green">575</FONT>                                            if (svalue != null) mFileName = svalue;<a name="line.575"></a>
+<FONT color="green">576</FONT>                                            else mSidCached &amp;=~bit;<a name="line.576"></a>
+<FONT color="green">577</FONT>                                            break;<a name="line.577"></a>
+<FONT color="green">578</FONT>                                    case 89:<a name="line.578"></a>
+<FONT color="green">579</FONT>                                            if (svalue != null) mFileSize = svalue;<a name="line.579"></a>
+<FONT color="green">580</FONT>                                            else mSidCached &amp;=~bit;<a name="line.580"></a>
+<FONT color="green">581</FONT>                                            break;<a name="line.581"></a>
+<FONT color="green">582</FONT>                                    case 90:<a name="line.582"></a>
+<FONT color="green">583</FONT>                                            if (svalue != null) mBytesTransferred = svalue;<a name="line.583"></a>
+<FONT color="green">584</FONT>                                            else mSidCached &amp;=~bit;<a name="line.584"></a>
+<FONT color="green">585</FONT>                                            break;<a name="line.585"></a>
+<FONT color="green">586</FONT>                                    case 91: mBytesPerSecond = value; break;<a name="line.586"></a>
+<FONT color="green">587</FONT>                                    case 93: mChatMsgIndex = value; break;<a name="line.587"></a>
+<FONT color="green">588</FONT>                                    case 98:<a name="line.588"></a>
+<FONT color="green">589</FONT>                                            if (value != 0)<a name="line.589"></a>
+<FONT color="green">590</FONT>                                                    mConversation = (Conversation) mSidRoot.sidGetObject(property.getModuleId(), value);<a name="line.590"></a>
+<FONT color="green">591</FONT>                                            else {<a name="line.591"></a>
+<FONT color="green">592</FONT>                                                    mConversation = null;<a name="line.592"></a>
+<FONT color="green">593</FONT>                                                    mSidCached &amp;=~bit;<a name="line.593"></a>
+<FONT color="green">594</FONT>                                            }<a name="line.594"></a>
+<FONT color="green">595</FONT>                                            break;<a name="line.595"></a>
+<FONT color="green">596</FONT>                                    default: mSidCached&amp;=~bit; break;<a name="line.596"></a>
+<FONT color="green">597</FONT>                                    }<a name="line.597"></a>
+<FONT color="green">598</FONT>                            }<a name="line.598"></a>
+<FONT color="green">599</FONT>                    }<a name="line.599"></a>
+<FONT color="green">600</FONT>                    TransferListener listener = ((Skype) mSidRoot).getTransferListener();<a name="line.600"></a>
+<FONT color="green">601</FONT>                    if (listener != null)<a name="line.601"></a>
+<FONT color="green">602</FONT>                            listener.onPropertyChange(this, property, value, svalue);<a name="line.602"></a>
+<FONT color="green">603</FONT>            }<a name="line.603"></a>
+<FONT color="green">604</FONT>            public void sidSetProperty(final PropertyEnumConverting prop, final String newValue) {<a name="line.604"></a>
+<FONT color="green">605</FONT>                    final int propId = prop.getId();<a name="line.605"></a>
+<FONT color="green">606</FONT>                    switch(propId) {<a name="line.606"></a>
+<FONT color="green">607</FONT>                    case 81:<a name="line.607"></a>
+<FONT color="green">608</FONT>                            mSidCached |= 0x2;<a name="line.608"></a>
+<FONT color="green">609</FONT>                            mPartnerHandle=  newValue;<a name="line.609"></a>
+<FONT color="green">610</FONT>                            break;<a name="line.610"></a>
+<FONT color="green">611</FONT>                    case 82:<a name="line.611"></a>
+<FONT color="green">612</FONT>                            mSidCached |= 0x4;<a name="line.612"></a>
+<FONT color="green">613</FONT>                            mPartnerDisplayName=  newValue;<a name="line.613"></a>
+<FONT color="green">614</FONT>                            break;<a name="line.614"></a>
+<FONT color="green">615</FONT>                    case 87:<a name="line.615"></a>
+<FONT color="green">616</FONT>                            mSidCached |= 0x80;<a name="line.616"></a>
+<FONT color="green">617</FONT>                            mFilePath=  newValue;<a name="line.617"></a>
+<FONT color="green">618</FONT>                            break;<a name="line.618"></a>
+<FONT color="green">619</FONT>                    case 88:<a name="line.619"></a>
+<FONT color="green">620</FONT>                            mSidCached |= 0x100;<a name="line.620"></a>
+<FONT color="green">621</FONT>                            mFileName=  newValue;<a name="line.621"></a>
+<FONT color="green">622</FONT>                            break;<a name="line.622"></a>
+<FONT color="green">623</FONT>                    case 89:<a name="line.623"></a>
+<FONT color="green">624</FONT>                            mSidCached |= 0x200;<a name="line.624"></a>
+<FONT color="green">625</FONT>                            mFileSize=  newValue;<a name="line.625"></a>
+<FONT color="green">626</FONT>                            break;<a name="line.626"></a>
+<FONT color="green">627</FONT>                    case 90:<a name="line.627"></a>
+<FONT color="green">628</FONT>                            mSidCached |= 0x400;<a name="line.628"></a>
+<FONT color="green">629</FONT>                            mBytesTransferred=  newValue;<a name="line.629"></a>
+<FONT color="green">630</FONT>                            break;<a name="line.630"></a>
+<FONT color="green">631</FONT>                    }<a name="line.631"></a>
+<FONT color="green">632</FONT>            }<a name="line.632"></a>
+<FONT color="green">633</FONT>            public void sidSetProperty(final PropertyEnumConverting prop, final SidObject newValue) {<a name="line.633"></a>
+<FONT color="green">634</FONT>                    final int propId = prop.getId();<a name="line.634"></a>
+<FONT color="green">635</FONT>                    assert(propId == 98);<a name="line.635"></a>
+<FONT color="green">636</FONT>                    mSidCached |= 0x4000;<a name="line.636"></a>
+<FONT color="green">637</FONT>                    mConversation= (Conversation) newValue;<a name="line.637"></a>
+<FONT color="green">638</FONT>            }<a name="line.638"></a>
+<FONT color="green">639</FONT>            public void sidSetProperty(final PropertyEnumConverting prop, final int newValue) {<a name="line.639"></a>
+<FONT color="green">640</FONT>                    final int propId = prop.getId();<a name="line.640"></a>
+<FONT color="green">641</FONT>                    switch(propId) {<a name="line.641"></a>
+<FONT color="green">642</FONT>                    case 80:<a name="line.642"></a>
+<FONT color="green">643</FONT>                            mSidCached |= 0x1;<a name="line.643"></a>
+<FONT color="green">644</FONT>                            mType= Type.get(newValue);<a name="line.644"></a>
+<FONT color="green">645</FONT>                            break;<a name="line.645"></a>
+<FONT color="green">646</FONT>                    case 83:<a name="line.646"></a>
+<FONT color="green">647</FONT>                            mSidCached |= 0x8;<a name="line.647"></a>
+<FONT color="green">648</FONT>                            mStatus= Status.get(newValue);<a name="line.648"></a>
+<FONT color="green">649</FONT>                            break;<a name="line.649"></a>
+<FONT color="green">650</FONT>                    case 84:<a name="line.650"></a>
+<FONT color="green">651</FONT>                            mSidCached |= 0x10;<a name="line.651"></a>
+<FONT color="green">652</FONT>                            mFailureReason= FailureReason.get(newValue);<a name="line.652"></a>
+<FONT color="green">653</FONT>                            break;<a name="line.653"></a>
+<FONT color="green">654</FONT>                    case 91:<a name="line.654"></a>
+<FONT color="green">655</FONT>                            mSidCached |= 0x800;<a name="line.655"></a>
+<FONT color="green">656</FONT>                            mBytesPerSecond=  newValue;<a name="line.656"></a>
+<FONT color="green">657</FONT>                            break;<a name="line.657"></a>
+<FONT color="green">658</FONT>                    case 93:<a name="line.658"></a>
+<FONT color="green">659</FONT>                            mSidCached |= 0x2000;<a name="line.659"></a>
+<FONT color="green">660</FONT>                            mChatMsgIndex=  newValue;<a name="line.660"></a>
+<FONT color="green">661</FONT>                            break;<a name="line.661"></a>
+<FONT color="green">662</FONT>                    }<a name="line.662"></a>
+<FONT color="green">663</FONT>            }<a name="line.663"></a>
+<FONT color="green">664</FONT>            public void sidSetProperty(final PropertyEnumConverting prop, final byte[] newValue) {<a name="line.664"></a>
+<FONT color="green">665</FONT>                    final int propId = prop.getId();<a name="line.665"></a>
+<FONT color="green">666</FONT>                    assert(propId == 92);<a name="line.666"></a>
+<FONT color="green">667</FONT>                    mSidCached |= 0x1000;<a name="line.667"></a>
+<FONT color="green">668</FONT>                    mChatMsgGuid=  newValue;<a name="line.668"></a>
+<FONT color="green">669</FONT>            }<a name="line.669"></a>
+<FONT color="green">670</FONT>            public Type          mType;<a name="line.670"></a>
+<FONT color="green">671</FONT>            public String        mPartnerHandle;<a name="line.671"></a>
+<FONT color="green">672</FONT>            public String        mPartnerDisplayName;<a name="line.672"></a>
+<FONT color="green">673</FONT>            public Status        mStatus;<a name="line.673"></a>
+<FONT color="green">674</FONT>            public FailureReason mFailureReason;<a name="line.674"></a>
+<FONT color="green">675</FONT>            public long          mStartTime;<a name="line.675"></a>
+<FONT color="green">676</FONT>            public long          mFinishTime;<a name="line.676"></a>
+<FONT color="green">677</FONT>            public String        mFilePath;<a name="line.677"></a>
+<FONT color="green">678</FONT>            public String        mFileName;<a name="line.678"></a>
+<FONT color="green">679</FONT>            public String        mFileSize;<a name="line.679"></a>
+<FONT color="green">680</FONT>            public String        mBytesTransferred;<a name="line.680"></a>
+<FONT color="green">681</FONT>            public int           mBytesPerSecond;<a name="line.681"></a>
+<FONT color="green">682</FONT>            public byte[]        mChatMsgGuid;<a name="line.682"></a>
+<FONT color="green">683</FONT>            public int           mChatMsgIndex;<a name="line.683"></a>
+<FONT color="green">684</FONT>            public Conversation  mConversation;<a name="line.684"></a>
+<FONT color="green">685</FONT>            public int moduleId() {<a name="line.685"></a>
+<FONT color="green">686</FONT>                    return 6;<a name="line.686"></a>
+<FONT color="green">687</FONT>            }<a name="line.687"></a>
+<FONT color="green">688</FONT>            <a name="line.688"></a>
+<FONT color="green">689</FONT>            public Transfer(final int oid, final SidRoot root) {<a name="line.689"></a>
+<FONT color="green">690</FONT>                    super(oid, root, 15);<a name="line.690"></a>
+<FONT color="green">691</FONT>            }<a name="line.691"></a>
+<FONT color="green">692</FONT>    }<a name="line.692"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

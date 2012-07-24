@@ -1,0 +1,45 @@
+
+******************* CMAKE stderr *******************
+******************* GMAKE stderr *******************
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(sniffer.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(_md4.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(_misc.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(asm.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(dsa.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(hc128.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(misc.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(rabbit.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(ripemd.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(sha512.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(tfm.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(sniffer.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(_md4.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(_misc.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(asm.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(dsa.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(hc128.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(misc.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(rabbit.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(ripemd.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(sha512.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cyassl_lib.a(tfm.c.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cppwrapper_2_lib.a(skype-filename-list.cpp.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cppwrapper_2_lib.a(skype-filename.cpp.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cppwrapper_2_lib.a(skype-filename-list.cpp.o) has no symbols
+/usr/bin/ranlib: file: libskypekit-cppwrapper_2_lib.a(skype-filename.cpp.o) has no symbols
+/usr/bin/ranlib: file: libreference_opengl_lib.a(winglwindow.cpp.o) has no symbols
+/usr/bin/ranlib: file: libreference_opengl_lib.a(winglwindow.cpp.o) has no symbols
+/usr/bin/ranlib: file: /Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/build/libskypekit-cyassl_lib.a(sniffer.c.o) has no symbols
+/usr/bin/ranlib: file: /Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/build/libskypekit-cyassl_lib.a(_md4.c.o) has no symbols
+/usr/bin/ranlib: file: /Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/build/libskypekit-cyassl_lib.a(_misc.c.o) has no symbols
+/usr/bin/ranlib: file: /Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/build/libskypekit-cyassl_lib.a(asm.c.o) has no symbols
+/usr/bin/ranlib: file: /Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/build/libskypekit-cyassl_lib.a(dsa.c.o) has no symbols
+/usr/bin/ranlib: file: /Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/build/libskypekit-cyassl_lib.a(hc128.c.o) has no symbols
+/usr/bin/ranlib: file: /Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/build/libskypekit-cyassl_lib.a(misc.c.o) has no symbols
+/usr/bin/ranlib: file: /Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/build/libskypekit-cyassl_lib.a(rabbit.c.o) has no symbols
+/usr/bin/ranlib: file: /Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/build/libskypekit-cyassl_lib.a(ripemd.c.o) has no symbols
+/usr/bin/ranlib: file: /Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/build/libskypekit-cyassl_lib.a(sha512.c.o) has no symbols
+/usr/bin/ranlib: file: /Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/build/libskypekit-cyassl_lib.a(tfm.c.o) has no symbols
+/usr/bin/ranlib: file: /Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/build/libskypekit-cppwrapper_2_lib.a(skype-filename-list.cpp.o) has no symbols
+/usr/bin/ranlib: file: /Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/build/libskypekit-cppwrapper_2_lib.a(skype-filename.cpp.o) has no symbols
+/usr/bin/ranlib: file: /Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/build/libreference_opengl_lib.a(winglwindow.cpp.o) has no symbols

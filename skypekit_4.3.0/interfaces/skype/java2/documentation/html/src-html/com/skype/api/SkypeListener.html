@@ -1,0 +1,141 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    package com.skype.api;<a name="line.1"></a>
+<FONT color="green">002</FONT>    <a name="line.2"></a>
+<FONT color="green">003</FONT>    import com.skype.api.Conversation;<a name="line.3"></a>
+<FONT color="green">004</FONT>    import com.skype.api.Skype;<a name="line.4"></a>
+<FONT color="green">005</FONT>    <a name="line.5"></a>
+<FONT color="green">006</FONT>    <a name="line.6"></a>
+<FONT color="green">007</FONT>    public interface SkypeListener{<a name="line.7"></a>
+<FONT color="green">008</FONT>            /**<a name="line.8"></a>
+<FONT color="green">009</FONT>             * onNewCustomContactGroup<a name="line.9"></a>
+<FONT color="green">010</FONT>             * @param object<a name="line.10"></a>
+<FONT color="green">011</FONT>             * @param group eg, new contact group loaded from CBL<a name="line.11"></a>
+<FONT color="green">012</FONT>             */<a name="line.12"></a>
+<FONT color="green">013</FONT>            public void onNewCustomContactGroup(Skype object, ContactGroup group);<a name="line.13"></a>
+<FONT color="green">014</FONT>            /** This contact has appeared online. display alert * @param contact<a name="line.14"></a>
+<FONT color="green">015</FONT>             */<a name="line.15"></a>
+<FONT color="green">016</FONT>            public void onContactOnlineAppearance(Skype object, Contact contact);<a name="line.16"></a>
+<FONT color="green">017</FONT>            /** This contact has gone offline. display alert * @param contact<a name="line.17"></a>
+<FONT color="green">018</FONT>             */<a name="line.18"></a>
+<FONT color="green">019</FONT>            public void onContactGoneOffline(Skype object, Contact contact);<a name="line.19"></a>
+<FONT color="green">020</FONT>            /** This event gets fired when a Conversation item is added or removed from the list specified in the type argument. The primary use of this event is to detect creation of new Conversation objects. It can also be used for detecting occurance of live sessions - by monitoring added = true in Conversation.LIVE_CONVERSATIONS. Note that this method is not entirely sufficient for detecting live session termination (added = false and type = Conversation.LIVE_CONVERSATIONS). When the live session goes down, the default behaviour is that the Conversation object remains in the LIVE_CONVERSATIONS list for approximately 10 seconds. When another live session comes up within the same Conversation, the OnConversationListChange event will not fire - because the conversation was already in that list. There are two ways of getting around that. Firstly you can have all the conversations referenced at all times and then monitor Conversation.P_LOCAL_LIVESTATUS property changes, in which case you can pick up incoming live sessions from there. Alternatively, you can remove the delay between live session termination and conversation's removal from the LIVE_CONVERSATIONS list. This delay is controlled by the SETUPKEY_RECENTLY_LIVE_TIMEOUT setup key. To remove the delay, use Skype.SetInt(SETUPKEY_RECENTLY_LIVE_TIMEOUT, 0). Note that this setup key is account-based. You will need to have an account logged in in order to modify its value.  * @param conversation Conversation object that was added or removed to a list specified in the type argument. <a name="line.20"></a>
+<FONT color="green">021</FONT>             * @param type Specifies the list, into which the conversation was added or removed from. <a name="line.21"></a>
+<FONT color="green">022</FONT>             * @param added Specifies whether the conversation was added or removed. For ALL_CONVERSATIONS list, the removed event is only fired when the conversation is actually deleted. <a name="line.22"></a>
+<FONT color="green">023</FONT>             */<a name="line.23"></a>
+<FONT color="green">024</FONT>            public void onConversationListChange(Skype object, Conversation conversation, Conversation.ListType type, boolean added);<a name="line.24"></a>
+<FONT color="green">025</FONT>            /**<a name="line.25"></a>
+<FONT color="green">026</FONT>             * onMessage<a name="line.26"></a>
+<FONT color="green">027</FONT>             * @param object<a name="line.27"></a>
+<FONT color="green">028</FONT>             * @param message<a name="line.28"></a>
+<FONT color="green">029</FONT>             * @param changesInboxTimestamp if changesInboxTimestamp==true is a hint that tray alert should probably be displayed<a name="line.29"></a>
+<FONT color="green">030</FONT>             * @param supersedesHistoryMessage DEPRECATED, not set anymore<a name="line.30"></a>
+<FONT color="green">031</FONT>             * @param conversation<a name="line.31"></a>
+<FONT color="green">032</FONT>             */<a name="line.32"></a>
+<FONT color="green">033</FONT>            public void onMessage(Skype object, Message message, boolean changesInboxTimestamp, Message supersedesHistoryMessage, Conversation conversation);<a name="line.33"></a>
+<FONT color="green">034</FONT>            /** This callback gets fired when there are changes in the system video device list (USB webcam gets plugged in or is detached.) Note that local webcams are unavailable immediately after account login. It takes several seconds to populate and verify the webcam list. Thus, if your UI makes use of local video, you should always use this event for enabling video-related features in your UI.  */<a name="line.34"></a>
+<FONT color="green">035</FONT>            public void onAvailableVideoDeviceListChange(Skype object);<a name="line.35"></a>
+<FONT color="green">036</FONT>            /** Event is implemented only in SkypeKit builds. Fired when Skype video library uses software H264 codec for the first time on the particular hardware by particular SkypeKit-based application */<a name="line.36"></a>
+<FONT color="green">037</FONT>            public void onH264Activated(Skype object);<a name="line.37"></a>
+<FONT color="green">038</FONT>            /**<a name="line.38"></a>
+<FONT color="green">039</FONT>             * onQualityTestResult<a name="line.39"></a>
+<FONT color="green">040</FONT>             * @param object<a name="line.40"></a>
+<FONT color="green">041</FONT>             * @param testType<a name="line.41"></a>
+<FONT color="green">042</FONT>             * @param testResult<a name="line.42"></a>
+<FONT color="green">043</FONT>             * @param withUser<a name="line.43"></a>
+<FONT color="green">044</FONT>             * @param details<a name="line.44"></a>
+<FONT color="green">045</FONT>             * @param xmlDetails<a name="line.45"></a>
+<FONT color="green">046</FONT>             */<a name="line.46"></a>
+<FONT color="green">047</FONT>            public void onQualityTestResult(Skype object, Skype.QualityTestType testType, Skype.QualityTestResult testResult, String withUser, String details, String xmlDetails);<a name="line.47"></a>
+<FONT color="green">048</FONT>            /** This callback gets fired when there are changes in the system audio device list (USB headset gets plugged in or is detached.)  */<a name="line.48"></a>
+<FONT color="green">049</FONT>            public void onAvailableDeviceListChange(Skype object);<a name="line.49"></a>
+<FONT color="green">050</FONT>            /** This callback gets fired when the audio strength changes in either playback or recording audio streams. Useful for providing visual indicators of audio activity in your UI.  */<a name="line.50"></a>
+<FONT color="green">051</FONT>            public void onNrgLevelsChange(Skype object);<a name="line.51"></a>
+<FONT color="green">052</FONT>            /**<a name="line.52"></a>
+<FONT color="green">053</FONT>             * onProxyAuthFailure<a name="line.53"></a>
+<FONT color="green">054</FONT>             * @param object<a name="line.54"></a>
+<FONT color="green">055</FONT>             * @param type<a name="line.55"></a>
+<FONT color="green">056</FONT>             */<a name="line.56"></a>
+<FONT color="green">057</FONT>            public void onProxyAuthFailure(Skype object, Skype.ProxyType type);<a name="line.57"></a>
+<FONT color="green">058</FONT>            /** This event gets fired on incoming app2app datagram.  * @param appname App2app application ID. <a name="line.58"></a>
+<FONT color="green">059</FONT>             * @param stream App2app stream ID - see OnApp2AppStreamListChange event for obtaining stream IDs. <a name="line.59"></a>
+<FONT color="green">060</FONT>             * @param data Datagram payload - limited to 1500 bytes. <a name="line.60"></a>
+<FONT color="green">061</FONT>             */<a name="line.61"></a>
+<FONT color="green">062</FONT>            public void onApp2AppDatagram(Skype object, String appname, String stream, byte[] data);<a name="line.62"></a>
+<FONT color="green">063</FONT>            /**<a name="line.63"></a>
+<FONT color="green">064</FONT>             * In context of datagrams, this event will fire when: <a name="line.64"></a>
+<FONT color="green">065</FONT>             *  - Connection is established between two app2app applications. That is, when both parties have an app up with the same name and -both- used App2AppConnect In that case, both parties get this event, with listType ALL_STREAMS <a name="line.65"></a>
+<FONT color="green">066</FONT>             *  - When a datagram is sent, the sender will get this event with listType SENDING_STREAMS Receiver of the datagram will get OnApp2AppDatagram event instead. <a name="line.66"></a>
+<FONT color="green">067</FONT>             *  - When the remote party drops app2app connection, the local user will get OnApp2AppStreamListChange with listType ALL_STREAMS and streams.size() zero. <a name="line.67"></a>
+<FONT color="green">068</FONT>             * In context of stream reads/writes, this event will fire for both the sender (listType == SENDING_STREAMS)and the receiver (listType == RECEIVED_STREAMS). For receiver side, this is the place to put your reading code - App2AppRead. <a name="line.68"></a>
+<FONT color="green">069</FONT>             * @param appname application ID - the name you supplied in App2AppCreate. <a name="line.69"></a>
+<FONT color="green">070</FONT>             * @param listType application list type (read/write/all) <a name="line.70"></a>
+<FONT color="green">071</FONT>             * @param streams SEStringlist with affected stream IDs. <a name="line.71"></a>
+<FONT color="green">072</FONT>             * @param receivedSizes For RECEIVED_STREAMS, contains the number of bytes in each stream waiting to be read<a name="line.72"></a>
+<FONT color="green">073</FONT>             */<a name="line.73"></a>
+<FONT color="green">074</FONT>            public void onApp2AppStreamListChange(Skype object, String appname, Skype.App2AppStreams listType, String[] streams, int[] receivedSizes);<a name="line.74"></a>
+<FONT color="green">075</FONT>    }<a name="line.75"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

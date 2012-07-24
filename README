@@ -1,0 +1,8 @@
+First, start the Skype Runtime by running:
+
+  skypekit_4.3.0/bin/mac-x86/mac-x86-skypekit-novideo
+
+
+Next, start the app, providing the username and password of the Skype account:
+
+  python skype-app.py username password

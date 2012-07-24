@@ -1,0 +1,5 @@
+This directory contains cmake files that define GNU-flavored compilation/linkage
+options that we want to use across our build products. The intent is to (ultimately)
+have multiple different GNU-flavored config files that can be different depending
+on platform, and that can be picked up when cross-compiling (through toolchain
+files). This is a work in progress, of course.

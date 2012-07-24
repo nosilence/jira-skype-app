@@ -1,0 +1,93 @@
+
+--------------------------------------------------------------------------------
+-- TODO
+
+* investigate a rare problem with lockup on retrieving extra-long message list
+* the wordwrapper is still not quite right. need to fix it again..
+* fix occasional empty lines in enum comments
+
+--------------------------------------------------------------------------------
+-- IN PROGRESS
+* port over c++ tutorials - 11 done, 5 to go..
+
+--------------------------------------------------------------------------------
+-- DONE
+* fix tutorial 2 to display message timestamps in local time instead of UTC.
+* fix DateTime/uint mix-up in method arguments - this is actually not my problem. This is caused by inconsistent timestamp type use in SID. Created a jira ticket https://jira.skype.net/browse/LIB-4249 and Thierry promised to look into it. Meanwhile the method arguments will remain uints, sadly. For now, the wrapper uses mixed timestamp types - unix timestamps in method arguments, and DateTime type in propertiea. I made the conversion functions in SktSkypeBase class public, so the temporary solution is to use those for conversion.
+* Added VS2008 project files for examples.
+* Fixed a bug that caused OnVideoResolutionChanged event to be fired on every frame.
+* changed tutorial 8 so that display names and avatar images are now cached in client (also added 300 ms delay before the participant list is refreshed)
+* add string argument to the runtime launch method - for command line parameters.
+* fix problem with enum arguments being passed to the runtime as uints.
+* fix problem in tutorial 8 with incoming chat messages
+* add retries to ipc socket connect so that it doesnt die on 1st timeout when the runtime fails to launch in timely manner.
+* add contact search tutorial
+* add skt_videorenderer.cs to the VS2008 library project
+* rename generator default output file to skt_skypekit_vs2010.cs and update project files.
+* add default contact avatars to the incoming calls tutorial
+* add better socket connection refused exception.
+* add notice to docs about necessity to typecast custom classes in event callbacks.
+* add socket disoconnect event
+* add OnVideoResolutionChanged event to the SktEventsBase class
+* move all graphics files under tutorials/common and update the tutorials that use them
+* change gfx loading from Image.FromFile to Bitmap() to get rid of idiotic rescaling bug.
+* rename and refactor the lib so that SktObject.skype is now skypeRef. (to avoid name conflict with skype variable in apps)
+* fix changed method signatures for single-out-arg methods in docs.
+* make it so that methods that only have 1 out argument, become as functions (thanks Tamas for suggestion)
+* document videorenderer 
+* add participant reference to the video object.
+* add FPS measurment to the video renderer
+* add video rendering support.
+* make skype.events into a read-only property instead of field
+* mark SktObject skype back-references as internal.
+* video problem - the first frame renders without a problem. After that - memInfo.bufferstates remains 0. (thanks Argo for help)
+* fix decoding problem with List<String>
+* invastigate problem with inconsistent object decoding (uints vs objects?) - fixed a workaround with brute force for now. it's not my bug.
+* add setupkeys (note: the wrapper is now feature-complete!)
+* document logging options
+* document that properties cannot be accessed from within class constructors
+* add propkeys (for setter methods)
+* re-write parts of docs that address prop updates
+* separate "fetch from runtime" part from property get accessor
+* investigate the curious case of Contact.P_MOOD_TEXT updates with type "N" - ok, rewrote prop update logic completely
+* fix null pointer crash in logging, when prop update is empty
+* investigate possible alien activities near Contact.P_TYPE decoding.
+* fix propagation of empty-valued prop updates
+* document nested list classes.
+* add console app "hello world" to the manual main page
+* test new subclassing mechanism in visual basic
+* fix documentation, in places where it talks about subclassing
+* rewrite subclassing to use delegates and lambdas instead of virtual methods
+* fix erroneous boolean decoding in event
+* fix erroneous DecodeInt in event enum decoders
+* fix occasional invalid typecast in prop updates, when the prop is SktObject descendant
+* add wrapper library VS2008 project files
+* reference documentation - events
+* better word wrapper for comments
+* default login dialog for tutorials
+* cache fields to volatiles - problem with DateTime type. Need to store those as uints.
+* reference documentation - main page
+* change method out arguments from ref to out
+* eventually add common decode response method for methods, will save approx 4000 lines of code.
+* fix reference documentation css and layout
+* reference documentation - converting pem files
+* reference documentation - threading (also, for console apps)
+* Skt class inheritance support
+* investigate GetContact return arguments problem (Thierry)
+* investigate how to properly match prop updates with calling threads (Thierry)
+* add automatic runtime version mismatch check, version string in generator and in SktSkype class
+* add per class events documentation
+* additional SktSkype constructor with default values for ip, port and kill existing runtime options
+* add default callback for directing wrapper log to a file
+* transport log toggleable and add write log
+* add prop requests to log
+* method argument default values
+* skt objectlist typecast check - where have i missed it
+* object creation logging
+* modify event and prop update Fire functions in SktEvents to gui instead and check for null in case of console apps
+* test if the lib actually works with console apps
+* move descendancy from Control class from SktEvents class and have the gui form accessible as field (gui) instead
+* check for remnants of old threading related code in skt_baseobjects
+* add time difference between each event to log
+* investigate logout_reason lockup
+

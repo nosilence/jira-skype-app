@@ -1,0 +1,2 @@
+/usr/bin/ar cr libreference_opengl_lib.a  CMakeFiles/reference_opengl_lib.dir/Users/ncherry/Desktop/Projects/skypekit_4.3.0/reference/openglvideorenderer/glwindow.cpp.o CMakeFiles/reference_opengl_lib.dir/Users/ncherry/Desktop/Projects/skypekit_4.3.0/reference/openglvideorenderer/winglwindow.cpp.o
+/usr/bin/ranlib libreference_opengl_lib.a

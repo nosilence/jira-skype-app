@@ -1,0 +1,4 @@
+run master cmakelist.txt under skypekit directory, then type:
+make SkypeAlsaWrapper
+it will generate the shared lib, then type:
+make voicepcmhost-alsa, it will generate the voicepcmhost-alsa binary under bin/Linux-x86_64/

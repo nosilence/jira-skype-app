@@ -1,0 +1,4 @@
+/Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/cmake-build/src/platform/opengl/CMakeFiles/reference_opengl_lib.dir
+/Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/cmake-build/src/api/CMakeFiles/skypekit-cppwrapper_2_lib.dir
+/Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/cmake-build/src/ssl/CMakeFiles/skypekit-cyassl_lib.dir
+/Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/cmake-build/src/client/CMakeFiles/skypekitclient.dir

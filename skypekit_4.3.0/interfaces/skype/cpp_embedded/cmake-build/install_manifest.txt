@@ -1,0 +1,4 @@
+/Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/build/libskypekit-cyassl_lib.a
+/Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/build/libskypekit-cppwrapper_2_lib.a
+/Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/build/libreference_opengl_lib.a
+/Users/ncherry/Desktop/Projects/skypekit_4.3.0/interfaces/skype/cpp_embedded/build/skypekitclient

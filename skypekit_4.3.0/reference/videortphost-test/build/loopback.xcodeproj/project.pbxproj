@@ -1,0 +1,453 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7A32645501461CE77C674192 /* ptasking.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 19FD565946077AA67CC25947 /* ptasking.cpp */; };
+		32B938054A0B4C96274C36DE /* H264AnxbReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FE05090324671266D772EAD /* H264AnxbReader.cpp */; };
+		4C4A52BD47541D7869561DB2 /* H264AnxbToRtp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7285314A29E45176022B6B9D /* H264AnxbToRtp.cpp */; };
+		4D476C672922061469C16286 /* H264RtpToAnxb.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4C5D7D1613BF166849AD3B0C /* H264RtpToAnxb.cpp */; };
+		775C02E92B45659F209875A3 /* PcapHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12557A0768B859AA177F520F /* PcapHandler.cpp */; };
+		214B049B3E94140559B441F3 /* V4l2Capture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00625DA231052BA74341519D /* V4l2Capture.cpp */; };
+		08581CBD73A61B710E730125 /* skype-thread-pthread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0F8D20791B8E5F183DA15F64 /* skype-thread-pthread.cpp */; };
+		3CCE206167791A0764FF295F /* skype-binary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A91508F598B42726372328A /* skype-binary.cpp */; };
+		00B85BFE2437745E777032AA /* skype-string.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05C5748D49D8215353A6077A /* skype-string.cpp */; };
+		4A6D39C9720131E753D15700 /* ColorConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E573A886E2C17E37CFA519F /* ColorConvert.cpp */; };
+		2C9A7BA27B3250D1700172A3 /* Configuration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B4759964B8E25207AEA1F34 /* Configuration.cpp */; };
+		3D4533D4063F2B724BB7033A /* DummyCapturer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 037C65863BC11FA7757C4BB7 /* DummyCapturer.cpp */; };
+		461323546A6B11A148746556 /* H264AnxbFileReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D1116253D036F12480D10D5 /* H264AnxbFileReader.cpp */; };
+		1EAC495D36815A6D69052BFE /* H264Decoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30D6750E60F92C0845E050FB /* H264Decoder.cpp */; };
+		2F9E4ECE41AE6CA23DE109BC /* H264Encoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2624264A5FD22C6451BC2B89 /* H264Encoder.cpp */; };
+		4D3A466C6A932E3372753074 /* PcapFileReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D7703F42D1067E315967584 /* PcapFileReader.cpp */; };
+		61AF11B3092041813E175ADD /* ReceiveVideoWrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7F2F112179D135B16B8E62D6 /* ReceiveVideoWrapper.cpp */; };
+		387557D16B8165863FB40118 /* SendVideoWrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6D0A6DB629AC2EB95A59678D /* SendVideoWrapper.cpp */; };
+		76123A524B1B6FE3700336AA /* V4l2Capturer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B0B0CEF4784459E3B2239FA /* V4l2Capturer.cpp */; };
+		36B8003E742C60652EF84E85 /* X11Renderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 52BA51B2485D5BDB13330675 /* X11Renderer.cpp */; };
+		348C280072FA7C116D9F2E1D /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47F2676E265633744CF5660B /* main.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		753469C658FB0E921BE27FAF /* debugging.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = "debugging.hpp"; path = "debugging.hpp"; sourceTree = "<group>"; };
+		19FD565946077AA67CC25947 /* ptasking.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "ptasking.cpp"; path = "ptasking.cpp"; sourceTree = "<group>"; };
+		4A8D1B5D19DD6F466CD35623 /* ptasking.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = "ptasking.hpp"; path = "ptasking.hpp"; sourceTree = "<group>"; };
+		46CA01ED5A9F4B4D3DF2752B /* rtph.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = "rtph.hpp"; path = "rtph.hpp"; sourceTree = "<group>"; };
+		50915BB7512E1699565D4DF0 /* BitrateStat.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = "BitrateStat.hpp"; path = "BitrateStat.hpp"; sourceTree = "<group>"; };
+		6FE05090324671266D772EAD /* H264AnxbReader.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "H264AnxbReader.cpp"; path = "H264AnxbReader.cpp"; sourceTree = "<group>"; };
+		22BA6E1638CC7D59396376BE /* H264AnxbReader.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = "H264AnxbReader.hpp"; path = "H264AnxbReader.hpp"; sourceTree = "<group>"; };
+		7285314A29E45176022B6B9D /* H264AnxbToRtp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "H264AnxbToRtp.cpp"; path = "H264AnxbToRtp.cpp"; sourceTree = "<group>"; };
+		6B6959366E421DAF4A5D5BBA /* H264AnxbToRtp.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = "H264AnxbToRtp.hpp"; path = "H264AnxbToRtp.hpp"; sourceTree = "<group>"; };
+		4C5D7D1613BF166849AD3B0C /* H264RtpToAnxb.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "H264RtpToAnxb.cpp"; path = "H264RtpToAnxb.cpp"; sourceTree = "<group>"; };
+		7CD25C4613D026B72DBC15FB /* H264RtpToAnxb.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = "H264RtpToAnxb.hpp"; path = "H264RtpToAnxb.hpp"; sourceTree = "<group>"; };
+		12557A0768B859AA177F520F /* PcapHandler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "PcapHandler.cpp"; path = "PcapHandler.cpp"; sourceTree = "<group>"; };
+		41596CF672BA5519035F3C67 /* PcapHandler.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = "PcapHandler.hpp"; path = "PcapHandler.hpp"; sourceTree = "<group>"; };
+		102550A728CF394756BB1290 /* SlidingAvg.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = "SlidingAvg.hpp"; path = "SlidingAvg.hpp"; sourceTree = "<group>"; };
+		1BCD538E6ED72F9E7A461C94 /* StaticSyncQueue.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = "StaticSyncQueue.hpp"; path = "StaticSyncQueue.hpp"; sourceTree = "<group>"; };
+		459A0C9B169B2E5366452E1B /* TimingStat.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = "TimingStat.hpp"; path = "TimingStat.hpp"; sourceTree = "<group>"; };
+		00625DA231052BA74341519D /* V4l2Capture.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "V4l2Capture.cpp"; path = "V4l2Capture.cpp"; sourceTree = "<group>"; };
+		506C69DA129A793C23216956 /* V4l2Capture.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = "V4l2Capture.hpp"; path = "V4l2Capture.hpp"; sourceTree = "<group>"; };
+		0BCD3EEF3CE47AA46E8D372B /* rfc3984.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = "rfc3984.hpp"; path = "rfc3984.hpp"; sourceTree = "<group>"; };
+		0F8D20791B8E5F183DA15F64 /* skype-thread-pthread.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "skype-thread-pthread.cpp"; path = "skype-thread-pthread.cpp"; sourceTree = "<group>"; };
+		2A91508F598B42726372328A /* skype-binary.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "skype-binary.cpp"; path = "skype-binary.cpp"; sourceTree = "<group>"; };
+		05C5748D49D8215353A6077A /* skype-string.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "skype-string.cpp"; path = "skype-string.cpp"; sourceTree = "<group>"; };
+		3E573A886E2C17E37CFA519F /* ColorConvert.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "ColorConvert.cpp"; path = "ColorConvert.cpp"; sourceTree = "<group>"; };
+		5B4759964B8E25207AEA1F34 /* Configuration.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "Configuration.cpp"; path = "Configuration.cpp"; sourceTree = "<group>"; };
+		037C65863BC11FA7757C4BB7 /* DummyCapturer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "DummyCapturer.cpp"; path = "DummyCapturer.cpp"; sourceTree = "<group>"; };
+		7D1116253D036F12480D10D5 /* H264AnxbFileReader.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "H264AnxbFileReader.cpp"; path = "H264AnxbFileReader.cpp"; sourceTree = "<group>"; };
+		30D6750E60F92C0845E050FB /* H264Decoder.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "H264Decoder.cpp"; path = "H264Decoder.cpp"; sourceTree = "<group>"; };
+		2624264A5FD22C6451BC2B89 /* H264Encoder.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "H264Encoder.cpp"; path = "H264Encoder.cpp"; sourceTree = "<group>"; };
+		7D7703F42D1067E315967584 /* PcapFileReader.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "PcapFileReader.cpp"; path = "PcapFileReader.cpp"; sourceTree = "<group>"; };
+		7F2F112179D135B16B8E62D6 /* ReceiveVideoWrapper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "ReceiveVideoWrapper.cpp"; path = "ReceiveVideoWrapper.cpp"; sourceTree = "<group>"; };
+		6D0A6DB629AC2EB95A59678D /* SendVideoWrapper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "SendVideoWrapper.cpp"; path = "SendVideoWrapper.cpp"; sourceTree = "<group>"; };
+		5B0B0CEF4784459E3B2239FA /* V4l2Capturer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "V4l2Capturer.cpp"; path = "V4l2Capturer.cpp"; sourceTree = "<group>"; };
+		52BA51B2485D5BDB13330675 /* X11Renderer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "X11Renderer.cpp"; path = "X11Renderer.cpp"; sourceTree = "<group>"; };
+		47F2676E265633744CF5660B /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "main.cpp"; path = "main.cpp"; sourceTree = "<group>"; };
+		044D602F62E27A51720C085A /* loopback */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = "loopback"; path = "loopback"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		55B7493C48F548B1454D3694 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1EF6584B24B851753C465783 /* loopback */ = {
+			isa = PBXGroup;
+			children = (
+				151A047B04833C041A8B2C98 /* common */,
+				1739342743C62DD5627A2A0C /* interfaces */,
+				7584491D1C2B0FF50FF61D9D /* src */,
+				360B63B1686F012753955872 /* Products */,
+			);
+			name = "loopback";
+			sourceTree = "<group>";
+		};
+		151A047B04833C041A8B2C98 /* common */ = {
+			isa = PBXGroup;
+			children = (
+				753469C658FB0E921BE27FAF /* debugging.hpp */,
+				19FD565946077AA67CC25947 /* ptasking.cpp */,
+				4A8D1B5D19DD6F466CD35623 /* ptasking.hpp */,
+				46CA01ED5A9F4B4D3DF2752B /* rtph.hpp */,
+				77E633265EF150E141B97AD4 /* video */,
+			);
+			name = "common";
+			path = ../../common;
+			sourceTree = "<group>";
+		};
+		77E633265EF150E141B97AD4 /* video */ = {
+			isa = PBXGroup;
+			children = (
+				50915BB7512E1699565D4DF0 /* BitrateStat.hpp */,
+				6FE05090324671266D772EAD /* H264AnxbReader.cpp */,
+				22BA6E1638CC7D59396376BE /* H264AnxbReader.hpp */,
+				7285314A29E45176022B6B9D /* H264AnxbToRtp.cpp */,
+				6B6959366E421DAF4A5D5BBA /* H264AnxbToRtp.hpp */,
+				4C5D7D1613BF166849AD3B0C /* H264RtpToAnxb.cpp */,
+				7CD25C4613D026B72DBC15FB /* H264RtpToAnxb.hpp */,
+				12557A0768B859AA177F520F /* PcapHandler.cpp */,
+				41596CF672BA5519035F3C67 /* PcapHandler.hpp */,
+				102550A728CF394756BB1290 /* SlidingAvg.hpp */,
+				1BCD538E6ED72F9E7A461C94 /* StaticSyncQueue.hpp */,
+				459A0C9B169B2E5366452E1B /* TimingStat.hpp */,
+				00625DA231052BA74341519D /* V4l2Capture.cpp */,
+				506C69DA129A793C23216956 /* V4l2Capture.hpp */,
+				0BCD3EEF3CE47AA46E8D372B /* rfc3984.hpp */,
+			);
+			name = "video";
+			path = video;
+			sourceTree = "<group>";
+		};
+		1739342743C62DD5627A2A0C /* interfaces */ = {
+			isa = PBXGroup;
+			children = (
+				5BF062DD07AE0CF50E844AEF /* skype */,
+			);
+			name = "interfaces";
+			path = ../../../interfaces;
+			sourceTree = "<group>";
+		};
+		5BF062DD07AE0CF50E844AEF /* skype */ = {
+			isa = PBXGroup;
+			children = (
+				5E932FD04F8B1D2843D5293F /* cpp_embedded */,
+			);
+			name = "skype";
+			path = skype;
+			sourceTree = "<group>";
+		};
+		5E932FD04F8B1D2843D5293F /* cpp_embedded */ = {
+			isa = PBXGroup;
+			children = (
+				5F1B1442131971B60D7E363B /* src */,
+			);
+			name = "cpp_embedded";
+			path = cpp_embedded;
+			sourceTree = "<group>";
+		};
+		5F1B1442131971B60D7E363B /* src */ = {
+			isa = PBXGroup;
+			children = (
+				5B0C194B752B17F113F063B9 /* platform */,
+				51AD69801A7146D801722E61 /* types */,
+			);
+			name = "src";
+			path = src;
+			sourceTree = "<group>";
+		};
+		5B0C194B752B17F113F063B9 /* platform */ = {
+			isa = PBXGroup;
+			children = (
+				4F1C2B2917E012E358FE7A5B /* threading */,
+			);
+			name = "platform";
+			path = platform;
+			sourceTree = "<group>";
+		};
+		4F1C2B2917E012E358FE7A5B /* threading */ = {
+			isa = PBXGroup;
+			children = (
+				3CEF34EF5D39449D41E56BBD /* pthread */,
+			);
+			name = "threading";
+			path = threading;
+			sourceTree = "<group>";
+		};
+		3CEF34EF5D39449D41E56BBD /* pthread */ = {
+			isa = PBXGroup;
+			children = (
+				0F8D20791B8E5F183DA15F64 /* skype-thread-pthread.cpp */,
+			);
+			name = "pthread";
+			path = pthread;
+			sourceTree = "<group>";
+		};
+		51AD69801A7146D801722E61 /* types */ = {
+			isa = PBXGroup;
+			children = (
+				2A91508F598B42726372328A /* skype-binary.cpp */,
+				05C5748D49D8215353A6077A /* skype-string.cpp */,
+			);
+			name = "types";
+			path = types;
+			sourceTree = "<group>";
+		};
+		7584491D1C2B0FF50FF61D9D /* src */ = {
+			isa = PBXGroup;
+			children = (
+				3E573A886E2C17E37CFA519F /* ColorConvert.cpp */,
+				5B4759964B8E25207AEA1F34 /* Configuration.cpp */,
+				037C65863BC11FA7757C4BB7 /* DummyCapturer.cpp */,
+				7D1116253D036F12480D10D5 /* H264AnxbFileReader.cpp */,
+				30D6750E60F92C0845E050FB /* H264Decoder.cpp */,
+				2624264A5FD22C6451BC2B89 /* H264Encoder.cpp */,
+				7D7703F42D1067E315967584 /* PcapFileReader.cpp */,
+				7F2F112179D135B16B8E62D6 /* ReceiveVideoWrapper.cpp */,
+				6D0A6DB629AC2EB95A59678D /* SendVideoWrapper.cpp */,
+				5B0B0CEF4784459E3B2239FA /* V4l2Capturer.cpp */,
+				52BA51B2485D5BDB13330675 /* X11Renderer.cpp */,
+				47F2676E265633744CF5660B /* main.cpp */,
+			);
+			name = "src";
+			path = ../src;
+			sourceTree = "<group>";
+		};
+		360B63B1686F012753955872 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				044D602F62E27A51720C085A /* loopback */,
+			);
+			name = "Products";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1FA3553D6BF14CE81EE34129 /* loopback */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 37D1264F2A25002F022B3D59 /* Build configuration list for PBXNativeTarget "loopback" */;
+			buildPhases = (
+				06A438E33D987AD019496C91 /* Resources */,
+				4955613B54006FAC14AF20F5 /* Sources */,
+				55B7493C48F548B1454D3694 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "loopback";
+			productInstallPath = "$(HOME)/bin";
+			productName = "loopback";
+			productReference = 044D602F62E27A51720C085A /* loopback */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "loopback" */;
+			compatibilityVersion = "Xcode 3.1";
+			hasScannedForEncodings = 1;
+			mainGroup = 1EF6584B24B851753C465783 /* loopback */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1FA3553D6BF14CE81EE34129 /* loopback */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		06A438E33D987AD019496C91 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4955613B54006FAC14AF20F5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7A32645501461CE77C674192 /* ptasking.cpp in Sources */,
+				32B938054A0B4C96274C36DE /* H264AnxbReader.cpp in Sources */,
+				4C4A52BD47541D7869561DB2 /* H264AnxbToRtp.cpp in Sources */,
+				4D476C672922061469C16286 /* H264RtpToAnxb.cpp in Sources */,
+				775C02E92B45659F209875A3 /* PcapHandler.cpp in Sources */,
+				214B049B3E94140559B441F3 /* V4l2Capture.cpp in Sources */,
+				08581CBD73A61B710E730125 /* skype-thread-pthread.cpp in Sources */,
+				3CCE206167791A0764FF295F /* skype-binary.cpp in Sources */,
+				00B85BFE2437745E777032AA /* skype-string.cpp in Sources */,
+				4A6D39C9720131E753D15700 /* ColorConvert.cpp in Sources */,
+				2C9A7BA27B3250D1700172A3 /* Configuration.cpp in Sources */,
+				3D4533D4063F2B724BB7033A /* DummyCapturer.cpp in Sources */,
+				461323546A6B11A148746556 /* H264AnxbFileReader.cpp in Sources */,
+				1EAC495D36815A6D69052BFE /* H264Decoder.cpp in Sources */,
+				2F9E4ECE41AE6CA23DE109BC /* H264Encoder.cpp in Sources */,
+				4D3A466C6A932E3372753074 /* PcapFileReader.cpp in Sources */,
+				61AF11B3092041813E175ADD /* ReceiveVideoWrapper.cpp in Sources */,
+				387557D16B8165863FB40118 /* SendVideoWrapper.cpp in Sources */,
+				76123A524B1B6FE3700336AA /* V4l2Capturer.cpp in Sources */,
+				36B8003E742C60652EF84E85 /* X11Renderer.cpp in Sources */,
+				348C280072FA7C116D9F2E1D /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		48352CFF26EA16102815392F /* Debug-universal */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = "loopback";
+			};
+			name = "Debug-universal";
+		};
+		3A76465760A8266813407F8C /* Release-universal */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = "loopback";
+			};
+			name = "Release-universal";
+		};
+		4F3A2C62195E321C26B40B6A /* Debug-universal */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"_DEBUG",
+					"DEBUG",
+					"SKYPEKIT",
+					"ENABLE_DEBUG",
+				);
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../../common",
+					"../../common/video",
+					"../src",
+					"../../../interfaces/videortp",
+					"../../../interfaces/videortp/videohost_ipc",
+					"../../../interfaces/skype/cpp_embedded/src/types",
+					"../../../ipc/cpp/platform/se",
+					"../../../interfaces/skype/cpp_embedded/src/platform/threading",
+					"../../../interfaces/skype/cpp_embedded/src/platform/threading/pthread",
+					"../../../ipc/cpp",
+				);
+				OBJROOT = "obj/Debug-universal";
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_CFLAGS = (
+					"`pkg-config libavcodec --cflags`",
+				);
+				OTHER_LDFLAGS = (
+					"`pkg-config libavcodec libavutil --libs`",
+					"-lx264 -lXv",
+				);
+				PREBINDING = NO;
+				WARNING_CFLAGS = "-Wall";
+			};
+			name = "Debug-universal";
+		};
+		679227FE22B41811404C2DA6 /* Release-universal */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"NDEBUG",
+					"SKYPEKIT",
+					"ENABLE_DEBUG",
+				);
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../../common",
+					"../../common/video",
+					"../src",
+					"../../../interfaces/videortp",
+					"../../../interfaces/videortp/videohost_ipc",
+					"../../../interfaces/skype/cpp_embedded/src/types",
+					"../../../ipc/cpp/platform/se",
+					"../../../interfaces/skype/cpp_embedded/src/platform/threading",
+					"../../../interfaces/skype/cpp_embedded/src/platform/threading/pthread",
+					"../../../ipc/cpp",
+				);
+				OBJROOT = "obj/Release-universal";
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_CFLAGS = (
+					"`pkg-config libavcodec --cflags`",
+				);
+				OTHER_LDFLAGS = (
+					"`pkg-config libavcodec libavutil --libs`",
+					"-lx264 -lXv",
+				);
+				PREBINDING = NO;
+				WARNING_CFLAGS = "-Wall";
+			};
+			name = "Release-universal";
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		37D1264F2A25002F022B3D59 /* Build configuration list for PBXNativeTarget "loopback" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				48352CFF26EA16102815392F /* Debug-universal */,
+				3A76465760A8266813407F8C /* Release-universal */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug-universal";
+		};
+		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "loopback" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4F3A2C62195E321C26B40B6A /* Debug-universal */,
+				679227FE22B41811404C2DA6 /* Release-universal */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug-universal";
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}

@@ -1,0 +1,2 @@
+This directory contains cmake files that define msvc-flavored compilation/linkage
+options that we want to use acroos our build products.

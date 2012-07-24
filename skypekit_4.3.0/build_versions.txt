@@ -1,0 +1,18 @@
+SkypeKit distro sdp-distro-skypekit_4.3.0.168_1823862
+
+Builds included in this package:
+linux-x86-skypekit_4.3.0.177_1823891
+linux-x86-skypekit-novideo_4.3.0.182_1823902
+linux-x86-skypekit-videortp_4.3.0.171_1823871
+linux-x86-skypekit-voicepcm-videortp_4.3.0.179_1823896
+linux-armv5-skypekit-voicepcm-novideo_4.3.0.169_1823866
+linux-armv5-skypekit-voicepcm-videortp_4.3.0.176_1823882
+linux-armv6-skypekit-voicepcm-novideo_4.3.0.170_1823868
+linux-armv6-skypekit-voicepcm-videortp_4.3.0.181_1823899
+linux-armv7-skypekit-voicepcm-novideo_4.3.0.174_1823879
+linux-armv7-skypekit-voicepcm-videortp_4.3.0.175_1823880
+mac-x86-skypekit_4.3.0.180_1823898
+mac-x86-skypekit-novideo_4.3.0.172_1823872
+windows-x86-skypekit_4.3.0.178_1823894
+windows-x86-skypekit-novideo_4.3.0.173_1823876
+skypekit-sdk_4.3.0.183_1823909

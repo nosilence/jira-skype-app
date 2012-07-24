@@ -1,0 +1,9 @@
+To build, type command:
+make
+
+build options: 
+	TARGET_ARCH=(default i686, see ../../buildfiles/arch directory for other TARGET_ARCH options) - build for specific architecture
+	verbose=(0 | 1, default 0) - be verbose
+
+To clean build, type:
+make clean

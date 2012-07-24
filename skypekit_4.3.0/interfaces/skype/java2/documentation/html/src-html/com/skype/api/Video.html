@@ -1,0 +1,619 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    package com.skype.api;<a name="line.1"></a>
+<FONT color="green">002</FONT>    <a name="line.2"></a>
+<FONT color="green">003</FONT>    import com.skype.ipc.SidRoot;<a name="line.3"></a>
+<FONT color="green">004</FONT>    import com.skype.ipc.SidObject;<a name="line.4"></a>
+<FONT color="green">005</FONT>    import com.skype.ipc.EnumConverting;<a name="line.5"></a>
+<FONT color="green">006</FONT>    import com.skype.ipc.PropertyEnumConverting;<a name="line.6"></a>
+<FONT color="green">007</FONT>    import com.skype.ipc.Decoding;<a name="line.7"></a>
+<FONT color="green">008</FONT>    import com.skype.ipc.Encoding;<a name="line.8"></a>
+<FONT color="green">009</FONT>    import com.skype.ipc.Encoding;<a name="line.9"></a>
+<FONT color="green">010</FONT>    import java.io.IOException;<a name="line.10"></a>
+<FONT color="green">011</FONT>    import com.skype.ipc.PropertyEnumConverting;<a name="line.11"></a>
+<FONT color="green">012</FONT>    import com.skype.ipc.SidGetResponding;<a name="line.12"></a>
+<FONT color="green">013</FONT>    <a name="line.13"></a>
+<FONT color="green">014</FONT>    /**<a name="line.14"></a>
+<FONT color="green">015</FONT>     * This class contains basic video control functionality for live conversations with video. Basically, Video objects represent specific Participant's video state in a live Conversation. The Video class can represent both local (outgoing) and remote (incoming) video streams. Note that as of SkypeKit SDK version 3.2, this class no longer handles video rendering in the UI. Currently available SkypeKit runtimes do not support multi-party video. The API however is designed with future compatibility in mind, so the Video class is attached to Participant class rather than Conversation class. Once multi-party video will become available for SkypeKit, the logic should go like this: <a name="line.15"></a>
+<FONT color="green">016</FONT>     * <a name="line.16"></a>
+<FONT color="green">017</FONT>     * Let there be 4-way live conversation C and participants P1, P2, P3 and P4. P1 is the local user. Remote participants P2 and P3 are capable of sending video. Remote user P4 is not capable of sending video. You would then end up with 4 video objects: V1, V2, V3 and V0. <a name="line.17"></a>
+<FONT color="green">018</FONT>     * <a name="line.18"></a>
+<FONT color="green">019</FONT>     *  - C-&gt;P1-&gt;V1-&gt; outgoing video stream <a name="line.19"></a>
+<FONT color="green">020</FONT>     *  - C-&gt;P2-&gt;V2-&gt; incoming video stream 1 <a name="line.20"></a>
+<FONT color="green">021</FONT>     *  - C-&gt;P3-&gt;V3-&gt; incoming video stream 2 <a name="line.21"></a>
+<FONT color="green">022</FONT>     *  - C-&gt;P4-&gt; no video object as participant P4 does not advertise supporting video <a name="line.22"></a>
+<FONT color="green">023</FONT>     *  - V0-&gt; local webcam preview - this is not attached to any particular conversation, however the corresponding video object can be retrieved with Skype.GetPreviewVideo method. <a name="line.23"></a>
+<FONT color="green">024</FONT>     * <a name="line.24"></a>
+<FONT color="green">025</FONT>     * As getting from a live conversation to running video streams involves three classes, it can be somewhat less than obvious. The basic state transition logic goes like this: <a name="line.25"></a>
+<FONT color="green">026</FONT>     * <a name="line.26"></a>
+<FONT color="green">027</FONT>     * You start out with a Conversation, that suddenly becomes live <a name="line.27"></a>
+<FONT color="green">028</FONT>     * <a name="line.28"></a>
+<FONT color="green">029</FONT>     * CONVERSATION.LOCAL_LIVESTATUS = IM_LIVE <a name="line.29"></a>
+<FONT color="green">030</FONT>     * At this point you have access to participant list of that conversation. The next step will be to catch Partcipant property changes for PARTICIPANT.VIDEO_STATUS to see if any of the people in conversation have Video available. Note that you should not make assumptions on when this availability happens. Remote users may switch their video on-off as they please. <a name="line.30"></a>
+<FONT color="green">031</FONT>     * <a name="line.31"></a>
+<FONT color="green">032</FONT>     * PARTICIPANT.VIDEO_STATUS = VIDEO_AVAILABLE <a name="line.32"></a>
+<FONT color="green">033</FONT>     * If you get to VIDEO_AVAILABLE (not necessarily for all Participants), you can retrieve Video object, with Participant.GetVideo method. <a name="line.33"></a>
+<FONT color="green">034</FONT>     * <a name="line.34"></a>
+<FONT color="green">035</FONT>     * Now you will need to handle Video.STATUS property changes. In case of successful video call, the sequence of Video.STATUS and Participant.VIDEO_STATUS changes for each Participant and Video object should look like this: <a name="line.35"></a>
+<FONT color="green">036</FONT>     * <a name="line.36"></a>
+<FONT color="green">037</FONT>     *  - Video.STATUS = AVAILABLE <a name="line.37"></a>
+<FONT color="green">038</FONT>     *  - Video.STATUS = STARTING <a name="line.38"></a>
+<FONT color="green">039</FONT>     *  - Video.STATUS = CHECKING_SUBSCRIPTION <a name="line.39"></a>
+<FONT color="green">040</FONT>     *  - Video.STATUS = STARTING <a name="line.40"></a>
+<FONT color="green">041</FONT>     * <a name="line.41"></a>
+<FONT color="green">042</FONT>     * Participant.VIDEO_STATUS = VIDEO_CONNECTING <a name="line.42"></a>
+<FONT color="green">043</FONT>     *  - Video.STATUS = RUNNING <a name="line.43"></a>
+<FONT color="green">044</FONT>     *  - Participant.VIDEO_STATUS = STREAMING <a name="line.44"></a>
+<FONT color="green">045</FONT>     * Both Video.STATUS == RUNNING and Participant.VIDEO_STATUS == STREAMING are indicative that the video for that particular participant is up and running, and your UI should update itself accordingly. <a name="line.45"></a>
+<FONT color="green">046</FONT>     * <a name="line.46"></a>
+<FONT color="green">047</FONT>     * NB! Note that it is not enough to check for Video.STATUS property updates. By the time you obtain the Video object in your client, it may already it may already have progressed to a further status. You should always check the status property immediately after obtaining the Video object. <a name="line.47"></a>
+<FONT color="green">048</FONT>     */<a name="line.48"></a>
+<FONT color="green">049</FONT>    public final class Video extends SidObject {<a name="line.49"></a>
+<FONT color="green">050</FONT>            public enum Status implements EnumConverting {<a name="line.50"></a>
+<FONT color="green">051</FONT>                    NOT_AVAILABLE             (0),<a name="line.51"></a>
+<FONT color="green">052</FONT>                    AVAILABLE                 (1),<a name="line.52"></a>
+<FONT color="green">053</FONT>                    STARTING                  (2),<a name="line.53"></a>
+<FONT color="green">054</FONT>                    REJECTED                  (3),<a name="line.54"></a>
+<FONT color="green">055</FONT>                    RUNNING                   (4),<a name="line.55"></a>
+<FONT color="green">056</FONT>                    STOPPING                  (5),<a name="line.56"></a>
+<FONT color="green">057</FONT>                    PAUSED                    (6),<a name="line.57"></a>
+<FONT color="green">058</FONT>                    NOT_STARTED               (7),<a name="line.58"></a>
+<FONT color="green">059</FONT>                    HINT_IS_VIDEOCALL_RECEIVED(8),<a name="line.59"></a>
+<FONT color="green">060</FONT>                    UNKNOWN                   (9),<a name="line.60"></a>
+<FONT color="green">061</FONT>                    RENDERING                 (10),<a name="line.61"></a>
+<FONT color="green">062</FONT>                    CHECKING_SUBSCRIPTION     (11),<a name="line.62"></a>
+<FONT color="green">063</FONT>                    SWITCHING_DEVICE          (12);<a name="line.63"></a>
+<FONT color="green">064</FONT>                    private final int key;<a name="line.64"></a>
+<FONT color="green">065</FONT>                    Status(int key) {<a name="line.65"></a>
+<FONT color="green">066</FONT>                            this.key = key;<a name="line.66"></a>
+<FONT color="green">067</FONT>                    };<a name="line.67"></a>
+<FONT color="green">068</FONT>                    public int getId()   { return key; }<a name="line.68"></a>
+<FONT color="green">069</FONT>                    public EnumConverting getDefault() { return NOT_AVAILABLE; }<a name="line.69"></a>
+<FONT color="green">070</FONT>                    public EnumConverting convert(int from) { return Status.get(from); }<a name="line.70"></a>
+<FONT color="green">071</FONT>                    public EnumConverting[] getArray(final int size) { return new Status[size]; }<a name="line.71"></a>
+<FONT color="green">072</FONT>                    public static Status get(int from) {<a name="line.72"></a>
+<FONT color="green">073</FONT>                            switch (from) {<a name="line.73"></a>
+<FONT color="green">074</FONT>                            case  0: return NOT_AVAILABLE;<a name="line.74"></a>
+<FONT color="green">075</FONT>                            case  1: return AVAILABLE;<a name="line.75"></a>
+<FONT color="green">076</FONT>                            case  2: return STARTING;<a name="line.76"></a>
+<FONT color="green">077</FONT>                            case  3: return REJECTED;<a name="line.77"></a>
+<FONT color="green">078</FONT>                            case  4: return RUNNING;<a name="line.78"></a>
+<FONT color="green">079</FONT>                            case  5: return STOPPING;<a name="line.79"></a>
+<FONT color="green">080</FONT>                            case  6: return PAUSED;<a name="line.80"></a>
+<FONT color="green">081</FONT>                            case  7: return NOT_STARTED;<a name="line.81"></a>
+<FONT color="green">082</FONT>                            case  8: return HINT_IS_VIDEOCALL_RECEIVED;<a name="line.82"></a>
+<FONT color="green">083</FONT>                            case  9: return UNKNOWN;<a name="line.83"></a>
+<FONT color="green">084</FONT>                            case 10: return RENDERING;<a name="line.84"></a>
+<FONT color="green">085</FONT>                            case 11: return CHECKING_SUBSCRIPTION;<a name="line.85"></a>
+<FONT color="green">086</FONT>                            case 12: return SWITCHING_DEVICE;<a name="line.86"></a>
+<FONT color="green">087</FONT>                            }<a name="line.87"></a>
+<FONT color="green">088</FONT>                            return NOT_AVAILABLE;<a name="line.88"></a>
+<FONT color="green">089</FONT>                    }<a name="line.89"></a>
+<FONT color="green">090</FONT>                    public static final int NOT_AVAILABLE_VALUE              =  0;<a name="line.90"></a>
+<FONT color="green">091</FONT>                    public static final int AVAILABLE_VALUE                  =  1;<a name="line.91"></a>
+<FONT color="green">092</FONT>                    public static final int STARTING_VALUE                   =  2;<a name="line.92"></a>
+<FONT color="green">093</FONT>                    public static final int REJECTED_VALUE                   =  3;<a name="line.93"></a>
+<FONT color="green">094</FONT>                    public static final int RUNNING_VALUE                    =  4;<a name="line.94"></a>
+<FONT color="green">095</FONT>                    public static final int STOPPING_VALUE                   =  5;<a name="line.95"></a>
+<FONT color="green">096</FONT>                    public static final int PAUSED_VALUE                     =  6;<a name="line.96"></a>
+<FONT color="green">097</FONT>                    public static final int NOT_STARTED_VALUE                =  7;<a name="line.97"></a>
+<FONT color="green">098</FONT>                    public static final int HINT_IS_VIDEOCALL_RECEIVED_VALUE =  8;<a name="line.98"></a>
+<FONT color="green">099</FONT>                    public static final int UNKNOWN_VALUE                    =  9;<a name="line.99"></a>
+<FONT color="green">100</FONT>                    public static final int RENDERING_VALUE                  = 10;<a name="line.100"></a>
+<FONT color="green">101</FONT>                    public static final int CHECKING_SUBSCRIPTION_VALUE      = 11;<a name="line.101"></a>
+<FONT color="green">102</FONT>                    public static final int SWITCHING_DEVICE_VALUE           = 12;<a name="line.102"></a>
+<FONT color="green">103</FONT>            }<a name="line.103"></a>
+<FONT color="green">104</FONT>            public enum MediaType implements EnumConverting {<a name="line.104"></a>
+<FONT color="green">105</FONT>                    MEDIA_SCREENSHARING(1),<a name="line.105"></a>
+<FONT color="green">106</FONT>                    MEDIA_VIDEO        (0);<a name="line.106"></a>
+<FONT color="green">107</FONT>                    private final int key;<a name="line.107"></a>
+<FONT color="green">108</FONT>                    MediaType(int key) {<a name="line.108"></a>
+<FONT color="green">109</FONT>                            this.key = key;<a name="line.109"></a>
+<FONT color="green">110</FONT>                    };<a name="line.110"></a>
+<FONT color="green">111</FONT>                    public int getId()   { return key; }<a name="line.111"></a>
+<FONT color="green">112</FONT>                    public EnumConverting getDefault() { return MEDIA_SCREENSHARING; }<a name="line.112"></a>
+<FONT color="green">113</FONT>                    public EnumConverting convert(int from) { return MediaType.get(from); }<a name="line.113"></a>
+<FONT color="green">114</FONT>                    public EnumConverting[] getArray(final int size) { return new MediaType[size]; }<a name="line.114"></a>
+<FONT color="green">115</FONT>                    public static MediaType get(int from) {<a name="line.115"></a>
+<FONT color="green">116</FONT>                            switch (from) {<a name="line.116"></a>
+<FONT color="green">117</FONT>                            case 1: return MEDIA_SCREENSHARING;<a name="line.117"></a>
+<FONT color="green">118</FONT>                            case 0: return MEDIA_VIDEO;<a name="line.118"></a>
+<FONT color="green">119</FONT>                            }<a name="line.119"></a>
+<FONT color="green">120</FONT>                            return MEDIA_SCREENSHARING;<a name="line.120"></a>
+<FONT color="green">121</FONT>                    }<a name="line.121"></a>
+<FONT color="green">122</FONT>                    public static final int MEDIA_SCREENSHARING_VALUE = 1;<a name="line.122"></a>
+<FONT color="green">123</FONT>                    public static final int MEDIA_VIDEO_VALUE         = 0;<a name="line.123"></a>
+<FONT color="green">124</FONT>            }<a name="line.124"></a>
+<FONT color="green">125</FONT>            public enum VideoDeviceCapability implements EnumConverting {<a name="line.125"></a>
+<FONT color="green">126</FONT>                    VIDEOCAP_HQ_CAPABLE      (0),<a name="line.126"></a>
+<FONT color="green">127</FONT>                    VIDEOCAP_HQ_CERTIFIED    (1),<a name="line.127"></a>
+<FONT color="green">128</FONT>                    VIDEOCAP_REQ_DRIVERUPDATE(2),<a name="line.128"></a>
+<FONT color="green">129</FONT>                    VIDEOCAP_USB_HIGHSPEED   (3);<a name="line.129"></a>
+<FONT color="green">130</FONT>                    private final int key;<a name="line.130"></a>
+<FONT color="green">131</FONT>                    VideoDeviceCapability(int key) {<a name="line.131"></a>
+<FONT color="green">132</FONT>                            this.key = key;<a name="line.132"></a>
+<FONT color="green">133</FONT>                    };<a name="line.133"></a>
+<FONT color="green">134</FONT>                    public int getId()   { return key; }<a name="line.134"></a>
+<FONT color="green">135</FONT>                    public EnumConverting getDefault() { return VIDEOCAP_HQ_CAPABLE; }<a name="line.135"></a>
+<FONT color="green">136</FONT>                    public EnumConverting convert(int from) { return VideoDeviceCapability.get(from); }<a name="line.136"></a>
+<FONT color="green">137</FONT>                    public EnumConverting[] getArray(final int size) { return new VideoDeviceCapability[size]; }<a name="line.137"></a>
+<FONT color="green">138</FONT>                    public static VideoDeviceCapability get(int from) {<a name="line.138"></a>
+<FONT color="green">139</FONT>                            switch (from) {<a name="line.139"></a>
+<FONT color="green">140</FONT>                            case 0: return VIDEOCAP_HQ_CAPABLE;<a name="line.140"></a>
+<FONT color="green">141</FONT>                            case 1: return VIDEOCAP_HQ_CERTIFIED;<a name="line.141"></a>
+<FONT color="green">142</FONT>                            case 2: return VIDEOCAP_REQ_DRIVERUPDATE;<a name="line.142"></a>
+<FONT color="green">143</FONT>                            case 3: return VIDEOCAP_USB_HIGHSPEED;<a name="line.143"></a>
+<FONT color="green">144</FONT>                            }<a name="line.144"></a>
+<FONT color="green">145</FONT>                            return VIDEOCAP_HQ_CAPABLE;<a name="line.145"></a>
+<FONT color="green">146</FONT>                    }<a name="line.146"></a>
+<FONT color="green">147</FONT>                    public static final int VIDEOCAP_HQ_CAPABLE_VALUE       = 0;<a name="line.147"></a>
+<FONT color="green">148</FONT>                    public static final int VIDEOCAP_HQ_CERTIFIED_VALUE     = 1;<a name="line.148"></a>
+<FONT color="green">149</FONT>                    public static final int VIDEOCAP_REQ_DRIVERUPDATE_VALUE = 2;<a name="line.149"></a>
+<FONT color="green">150</FONT>                    public static final int VIDEOCAP_USB_HIGHSPEED_VALUE    = 3;<a name="line.150"></a>
+<FONT color="green">151</FONT>            }<a name="line.151"></a>
+<FONT color="green">152</FONT>            private final static byte[] P_STATUS_req = {(byte) 90,(byte) 71,(byte) 130,(byte) 1,(byte) 93,(byte) 11};<a name="line.152"></a>
+<FONT color="green">153</FONT>            private final static byte[] P_ERROR_req = {(byte) 90,(byte) 71,(byte) 131,(byte) 1,(byte) 93,(byte) 11};<a name="line.153"></a>
+<FONT color="green">154</FONT>            private final static byte[] P_DEBUG_INFO_req = {(byte) 90,(byte) 71,(byte) 132,(byte) 1,(byte) 93,(byte) 11};<a name="line.154"></a>
+<FONT color="green">155</FONT>            private final static byte[] P_DIMENSIONS_req = {(byte) 90,(byte) 71,(byte) 133,(byte) 1,(byte) 93,(byte) 11};<a name="line.155"></a>
+<FONT color="green">156</FONT>            private final static byte[] P_MEDIA_TYPE_req = {(byte) 90,(byte) 71,(byte) 134,(byte) 1,(byte) 93,(byte) 11};<a name="line.156"></a>
+<FONT color="green">157</FONT>            private final static byte[] P_CONVO_ID_req = {(byte) 90,(byte) 71,(byte) 208,(byte) 8,(byte) 93,(byte) 11};<a name="line.157"></a>
+<FONT color="green">158</FONT>            private final static byte[] P_DEVICE_PATH_req = {(byte) 90,(byte) 71,(byte) 209,(byte) 8,(byte) 93,(byte) 11};<a name="line.158"></a>
+<FONT color="green">159</FONT>            /** Properties of the Video class */<a name="line.159"></a>
+<FONT color="green">160</FONT>            public enum Property implements PropertyEnumConverting {<a name="line.160"></a>
+<FONT color="green">161</FONT>                    P_UNKNOWN    (0,0,null,0,null),<a name="line.161"></a>
+<FONT color="green">162</FONT>                    P_STATUS     (130, 1, P_STATUS_req, 0, Status.get(0)),          P_ERROR      (131, 2, P_ERROR_req, 0, null),<a name="line.162"></a>
+<FONT color="green">163</FONT>                    P_DEBUG_INFO (132, 3, P_DEBUG_INFO_req, 0, null),<a name="line.163"></a>
+<FONT color="green">164</FONT>                    P_DIMENSIONS (133, 4, P_DIMENSIONS_req, 0, null),<a name="line.164"></a>
+<FONT color="green">165</FONT>                    P_MEDIA_TYPE (134, 5, P_MEDIA_TYPE_req, 0, MediaType.get(0)),<a name="line.165"></a>
+<FONT color="green">166</FONT>                    P_CONVO_ID   (1104, 6, P_CONVO_ID_req, 18, null),<a name="line.166"></a>
+<FONT color="green">167</FONT>                    P_DEVICE_PATH(1105, 7, P_DEVICE_PATH_req, 0, null);<a name="line.167"></a>
+<FONT color="green">168</FONT>                    private final int    key;<a name="line.168"></a>
+<FONT color="green">169</FONT>                    private final int    idx;<a name="line.169"></a>
+<FONT color="green">170</FONT>                    private final byte[] req;<a name="line.170"></a>
+<FONT color="green">171</FONT>                    private final int    mod;<a name="line.171"></a>
+<FONT color="green">172</FONT>                    private final EnumConverting enumConverter;<a name="line.172"></a>
+<FONT color="green">173</FONT>                    Property(int key, int idx, byte[] req, int mod, EnumConverting converter) {<a name="line.173"></a>
+<FONT color="green">174</FONT>                            this.key = key;<a name="line.174"></a>
+<FONT color="green">175</FONT>                            this.idx = idx;<a name="line.175"></a>
+<FONT color="green">176</FONT>                            this.req = req;<a name="line.176"></a>
+<FONT color="green">177</FONT>                            this.mod = mod;<a name="line.177"></a>
+<FONT color="green">178</FONT>                            this.enumConverter = converter;<a name="line.178"></a>
+<FONT color="green">179</FONT>                    };<a name="line.179"></a>
+<FONT color="green">180</FONT>                    public boolean  isCached()    { return idx &gt; 0;   }<a name="line.180"></a>
+<FONT color="green">181</FONT>                    public int      getIdx()      { return idx;       }<a name="line.181"></a>
+<FONT color="green">182</FONT>                    public int      getId()       { return key;       }<a name="line.182"></a>
+<FONT color="green">183</FONT>                    public byte[]   getRequest()  { return req;       }<a name="line.183"></a>
+<FONT color="green">184</FONT>                    public EnumConverting getDefault()  { return P_UNKNOWN; }<a name="line.184"></a>
+<FONT color="green">185</FONT>                    public int      getModuleId() { return mod;       }<a name="line.185"></a>
+<FONT color="green">186</FONT>                    public EnumConverting getEnumConverter()    { return enumConverter;   }<a name="line.186"></a>
+<FONT color="green">187</FONT>                    public EnumConverting convert(final int from) { return Property.get(from); }<a name="line.187"></a>
+<FONT color="green">188</FONT>                    public EnumConverting[] getArray(final int size) { return new Property[size]; }<a name="line.188"></a>
+<FONT color="green">189</FONT>                    public static Property get(final int from) {<a name="line.189"></a>
+<FONT color="green">190</FONT>                            switch (from) {<a name="line.190"></a>
+<FONT color="green">191</FONT>                            case  130: return P_STATUS;<a name="line.191"></a>
+<FONT color="green">192</FONT>                            case  131: return P_ERROR;<a name="line.192"></a>
+<FONT color="green">193</FONT>                            case  132: return P_DEBUG_INFO;<a name="line.193"></a>
+<FONT color="green">194</FONT>                            case  133: return P_DIMENSIONS;<a name="line.194"></a>
+<FONT color="green">195</FONT>                            case  134: return P_MEDIA_TYPE;<a name="line.195"></a>
+<FONT color="green">196</FONT>                            case 1104: return P_CONVO_ID;<a name="line.196"></a>
+<FONT color="green">197</FONT>                            case 1105: return P_DEVICE_PATH;<a name="line.197"></a>
+<FONT color="green">198</FONT>                            }<a name="line.198"></a>
+<FONT color="green">199</FONT>                            return P_UNKNOWN;<a name="line.199"></a>
+<FONT color="green">200</FONT>                    }<a name="line.200"></a>
+<FONT color="green">201</FONT>                    public static final int P_STATUS_VALUE      =  130;<a name="line.201"></a>
+<FONT color="green">202</FONT>                    public static final int P_ERROR_VALUE       =  131;<a name="line.202"></a>
+<FONT color="green">203</FONT>                    public static final int P_DEBUG_INFO_VALUE  =  132;<a name="line.203"></a>
+<FONT color="green">204</FONT>                    public static final int P_DIMENSIONS_VALUE  =  133;<a name="line.204"></a>
+<FONT color="green">205</FONT>                    public static final int P_MEDIA_TYPE_VALUE  =  134;<a name="line.205"></a>
+<FONT color="green">206</FONT>                    public static final int P_CONVO_ID_VALUE    = 1104;<a name="line.206"></a>
+<FONT color="green">207</FONT>                    public static final int P_DEVICE_PATH_VALUE = 1105;<a name="line.207"></a>
+<FONT color="green">208</FONT>            }<a name="line.208"></a>
+<FONT color="green">209</FONT>            /** Setupkey SETUPKEY_VIDEO_DEVICE type:string  &lt;br&gt;Selected video device name &lt;br&gt;This is account-specific setup key. It can only be used while an account is logged in. &lt;br&gt; */<a name="line.209"></a>
+<FONT color="green">210</FONT>            public static final String VIDEO_DEVICE = "Lib/Video/Device";<a name="line.210"></a>
+<FONT color="green">211</FONT>            <a name="line.211"></a>
+<FONT color="green">212</FONT>            /** Setupkey SETUPKEY_VIDEO_DEVICE_PATH type:string  &lt;br&gt;Currently selected video device path. &lt;br&gt;This is account-specific setup key. It can only be used while an account is logged in. &lt;br&gt; */<a name="line.212"></a>
+<FONT color="green">213</FONT>            public static final String VIDEO_DEVICE_PATH = "Lib/Video/DevicePath";<a name="line.213"></a>
+<FONT color="green">214</FONT>            <a name="line.214"></a>
+<FONT color="green">215</FONT>            /** Setupkey SETUPKEY_VIDEO_AUTOSEND type:int  &lt;br&gt;Setting this to 1 starts sending video automatically when call starts &lt;br&gt;This is account-specific setup key. It can only be used while an account is logged in. &lt;br&gt; */<a name="line.215"></a>
+<FONT color="green">216</FONT>            public static final String VIDEO_AUTOSEND = "Lib/Video/AutoSend";<a name="line.216"></a>
+<FONT color="green">217</FONT>            <a name="line.217"></a>
+<FONT color="green">218</FONT>            /** Setupkey SETUPKEY_VIDEO_DISABLE type:int  &lt;br&gt;Setting this to 1 disables all video functionality. &lt;br&gt;This setup key is machine-specific and affects all local accounts. &lt;br&gt; */<a name="line.218"></a>
+<FONT color="green">219</FONT>            public static final String VIDEO_DISABLE = "*Lib/Video/Disable";<a name="line.219"></a>
+<FONT color="green">220</FONT>            <a name="line.220"></a>
+<FONT color="green">221</FONT>            /** Setupkey SETUPKEY_VIDEO_RECVPOLICY type:string default value:"contacts" &lt;br&gt;noone | contacts | callpolicy &lt;br&gt;This is account-specific setup key. It can only be used while an account is logged in. &lt;br&gt; */<a name="line.221"></a>
+<FONT color="green">222</FONT>            public static final String VIDEO_RECVPOLICY = "Lib/Video/RecvPolicy";<a name="line.222"></a>
+<FONT color="green">223</FONT>            <a name="line.223"></a>
+<FONT color="green">224</FONT>            /** Setupkey SETUPKEY_VIDEO_ADVERTPOLICY type:string default value:"contacts" &lt;br&gt;noone | contacts | everyone &lt;br&gt;This is account-specific setup key. It can only be used while an account is logged in. &lt;br&gt; */<a name="line.224"></a>
+<FONT color="green">225</FONT>            public static final String VIDEO_ADVERTPOLICY = "Lib/Video/AdvertPolicy";<a name="line.225"></a>
+<FONT color="green">226</FONT>            <a name="line.226"></a>
+<FONT color="green">227</FONT>            private final static byte[] start_req = {(byte) 90,(byte) 82,(byte) 11,(byte) 2};<a name="line.227"></a>
+<FONT color="green">228</FONT>            /** This method starts either video send or video receive, depending on whether the video object is sender or receiver. In case of desktop video, the receiver side needs to instantiate a renderer object and associate it with the receiveing video (Video.SetRemoteRendererId).  <a name="line.228"></a>
+<FONT color="green">229</FONT>             */<a name="line.229"></a>
+<FONT color="green">230</FONT>            public void start() {<a name="line.230"></a>
+<FONT color="green">231</FONT>                    try {<a name="line.231"></a>
+<FONT color="green">232</FONT>                            sidDoRequest(start_req)<a name="line.232"></a>
+<FONT color="green">233</FONT>                            .endOneWay();<a name="line.233"></a>
+<FONT color="green">234</FONT>                    } catch(IOException e) {<a name="line.234"></a>
+<FONT color="green">235</FONT>                            mSidRoot.sidOnFatalError(e);<a name="line.235"></a>
+<FONT color="green">236</FONT>                    }<a name="line.236"></a>
+<FONT color="green">237</FONT>            }<a name="line.237"></a>
+<FONT color="green">238</FONT>            private final static byte[] stop_req = {(byte) 90,(byte) 82,(byte) 11,(byte) 3};<a name="line.238"></a>
+<FONT color="green">239</FONT>            /** This method stops either video send or video receive, depending on whether the video object is sender or receiver. In case of desktop video, the receiver side needs to dis-associate the video object from the renderer, by calling Video.SetRemoteRendererId(0).  <a name="line.239"></a>
+<FONT color="green">240</FONT>             */<a name="line.240"></a>
+<FONT color="green">241</FONT>            public void stop() {<a name="line.241"></a>
+<FONT color="green">242</FONT>                    try {<a name="line.242"></a>
+<FONT color="green">243</FONT>                            sidDoRequest(stop_req)<a name="line.243"></a>
+<FONT color="green">244</FONT>                            .endOneWay();<a name="line.244"></a>
+<FONT color="green">245</FONT>                    } catch(IOException e) {<a name="line.245"></a>
+<FONT color="green">246</FONT>                            mSidRoot.sidOnFatalError(e);<a name="line.246"></a>
+<FONT color="green">247</FONT>                    }<a name="line.247"></a>
+<FONT color="green">248</FONT>            }<a name="line.248"></a>
+<FONT color="green">249</FONT>            private final static byte[] setScreenCaptureRectangle_req = {(byte) 90,(byte) 82,(byte) 11,(byte) 5};<a name="line.249"></a>
+<FONT color="green">250</FONT>            /** This method has no known effect in current version. <a name="line.250"></a>
+<FONT color="green">251</FONT>             * @param x0<a name="line.251"></a>
+<FONT color="green">252</FONT>             * @param y0<a name="line.252"></a>
+<FONT color="green">253</FONT>             * @param width<a name="line.253"></a>
+<FONT color="green">254</FONT>             * @param height<a name="line.254"></a>
+<FONT color="green">255</FONT>             * @param monitorNumber<a name="line.255"></a>
+<FONT color="green">256</FONT>             * @param windowHandle<a name="line.256"></a>
+<FONT color="green">257</FONT>             */<a name="line.257"></a>
+<FONT color="green">258</FONT>            public void setScreenCaptureRectangle(int x0, int y0, int width, int height, int monitorNumber, int windowHandle) {<a name="line.258"></a>
+<FONT color="green">259</FONT>                    try {<a name="line.259"></a>
+<FONT color="green">260</FONT>                            sidDoRequest(setScreenCaptureRectangle_req)<a name="line.260"></a>
+<FONT color="green">261</FONT>                            .addIntParm(1, x0)<a name="line.261"></a>
+<FONT color="green">262</FONT>                            .addIntParm(2, y0)<a name="line.262"></a>
+<FONT color="green">263</FONT>                            .addUintParm(3, width)<a name="line.263"></a>
+<FONT color="green">264</FONT>                            .addUintParm(4, height)<a name="line.264"></a>
+<FONT color="green">265</FONT>                            .addIntParm(5, monitorNumber)<a name="line.265"></a>
+<FONT color="green">266</FONT>                            .addUintParm(6, windowHandle)<a name="line.266"></a>
+<FONT color="green">267</FONT>                            .endOneWay();<a name="line.267"></a>
+<FONT color="green">268</FONT>                    } catch(IOException e) {<a name="line.268"></a>
+<FONT color="green">269</FONT>                            mSidRoot.sidOnFatalError(e);<a name="line.269"></a>
+<FONT color="green">270</FONT>                    }<a name="line.270"></a>
+<FONT color="green">271</FONT>            }<a name="line.271"></a>
+<FONT color="green">272</FONT>            private final static byte[] setRemoteRendererId_req = {(byte) 90,(byte) 82,(byte) 11,(byte) 14};<a name="line.272"></a>
+<FONT color="green">273</FONT>            /**<a name="line.273"></a>
+<FONT color="green">274</FONT>             * This method is specific to working with desktop video runtimes. In case of desktop video, this method associates a Video object with a rendering object. Once this association is in place, the Video object will start sending decoded video frames to the renderer object, over shared memory IPC transport. The renderer then periodically reads the shared memory buffer and draws bitmaps on the screen.  <a name="line.274"></a>
+<FONT color="green">275</FONT>             * <a name="line.275"></a>
+<FONT color="green">276</FONT>             * The "remote renderer ID" value you are expected to pass in this method comes from the renderer. The renderer class is normally implemented by you (for a specific GUI framework). However, the shared memory transport mechanism, for receiving decoded frames, is independant of GUI framework and are provided with the SDK for all three supporeted operating systems.  <a name="line.276"></a>
+<FONT color="green">277</FONT>             * <a name="line.277"></a>
+<FONT color="green">278</FONT>             * Your renderer class can include instance of the IPC transport as VideoTransportClient &lt;WinShm&gt; ipc or VideoTransportClient &lt;PosixShm&gt;  ipc; The ipc object then exposes ipc.key() function that returns the IPC channel ID. This ID can then be passed to the Video.SetRemoteRendererId method. A reference implementation of desktop video is included in the SDK (examples/cpp/qt_videocalls). <a name="line.278"></a>
+<FONT color="green">279</FONT>             * <a name="line.279"></a>
+<FONT color="green">280</FONT>             * When the incoming video stream stops (or rendering is stopped by the user), your client should explicitly stop the frame transport by calling Video.SetRemoteRendererId(0). <a name="line.280"></a>
+<FONT color="green">281</FONT>            <a name="line.281"></a>
+<FONT color="green">282</FONT>             * @param id IPC channel ID retrieved from the shared memory transport class (see ipc/cpp/VideoBuffers in the SDK). <a name="line.282"></a>
+<FONT color="green">283</FONT>             */<a name="line.283"></a>
+<FONT color="green">284</FONT>            public void setRemoteRendererId(int id) {<a name="line.284"></a>
+<FONT color="green">285</FONT>                    try {<a name="line.285"></a>
+<FONT color="green">286</FONT>                            sidDoRequest(setRemoteRendererId_req)<a name="line.286"></a>
+<FONT color="green">287</FONT>                            .addUintParm(1, id)<a name="line.287"></a>
+<FONT color="green">288</FONT>                            .endOneWay();<a name="line.288"></a>
+<FONT color="green">289</FONT>                    } catch(IOException e) {<a name="line.289"></a>
+<FONT color="green">290</FONT>                            mSidRoot.sidOnFatalError(e);<a name="line.290"></a>
+<FONT color="green">291</FONT>                    }<a name="line.291"></a>
+<FONT color="green">292</FONT>            }<a name="line.292"></a>
+<FONT color="green">293</FONT>            private final static byte[] selectVideoSource_req = {(byte) 90,(byte) 82,(byte) 11,(byte) 7};<a name="line.293"></a>
+<FONT color="green">294</FONT>            /**<a name="line.294"></a>
+<FONT color="green">295</FONT>             * Switches between local webcams. This only works for video objects representing the local user. It is possible to switch to a different webcam on the fly, during a live session, i.e. you don't need to call Video.Stop and Video.Start while doing it. The easiest way to retrieve the local user is to call current live session's GetParticipants with PARTICIPANTFILTER.MYSELF. To get values for the deviceName and devicePath arguments, use Skype.GetAvailableVideoDevices method. Note that the Skype.GetAvailableVideoDevices should not be used immedately after account login. It will take several seconds to populate the video device list. You should handle the Skype.OnSkypeAvailableVideoDeviceListChange event to detect when the video device list is ready. <a name="line.295"></a>
+<FONT color="green">296</FONT>             * <a name="line.296"></a>
+<FONT color="green">297</FONT>             * Note that the device switching will only work with webcams that are not already in use by some other application. For example, if you have a Skype desktop client with video running in parallel, while testing, the desktop client will "claim" its default webcam. That webcam will still show up in the video device list in SkypeKit-based app, but switching to it will not work.       <a name="line.297"></a>
+<FONT color="green">298</FONT>             * @param mediaType Screensharing or webcam. <a name="line.298"></a>
+<FONT color="green">299</FONT>             * @param webcamName Displayname of the webcam. <a name="line.299"></a>
+<FONT color="green">300</FONT>             * @param devicePath Device ID (from the 2nd list you get back from the Skype.GetAvailableVideoDevices method) <a name="line.300"></a>
+<FONT color="green">301</FONT>             * @param updateSetup Set true if you want to change the default value. <a name="line.301"></a>
+<FONT color="green">302</FONT>             */<a name="line.302"></a>
+<FONT color="green">303</FONT>            public void selectVideoSource(MediaType mediaType, String webcamName, String devicePath, boolean updateSetup) {<a name="line.303"></a>
+<FONT color="green">304</FONT>                    try {<a name="line.304"></a>
+<FONT color="green">305</FONT>                            sidDoRequest(selectVideoSource_req)<a name="line.305"></a>
+<FONT color="green">306</FONT>                            .addEnumParm(1, mediaType)<a name="line.306"></a>
+<FONT color="green">307</FONT>                            .addStringParm(2, webcamName)<a name="line.307"></a>
+<FONT color="green">308</FONT>                            .addStringParm(3, devicePath)<a name="line.308"></a>
+<FONT color="green">309</FONT>                            .addBoolParm(4, updateSetup)<a name="line.309"></a>
+<FONT color="green">310</FONT>                            .endOneWay();<a name="line.310"></a>
+<FONT color="green">311</FONT>                    } catch(IOException e) {<a name="line.311"></a>
+<FONT color="green">312</FONT>                            mSidRoot.sidOnFatalError(e);<a name="line.312"></a>
+<FONT color="green">313</FONT>                    }<a name="line.313"></a>
+<FONT color="green">314</FONT>            }<a name="line.314"></a>
+<FONT color="green">315</FONT>            private final static byte[] getCurrentVideoDevice_req = {(byte) 90,(byte) 82,(byte) 11,(byte) 10};<a name="line.315"></a>
+<FONT color="green">316</FONT>            public class GetCurrentVideoDeviceResponse {<a name="line.316"></a>
+<FONT color="green">317</FONT>                    public MediaType mediatype;<a name="line.317"></a>
+<FONT color="green">318</FONT>                    public String deviceName;<a name="line.318"></a>
+<FONT color="green">319</FONT>                    public String devicePath;<a name="line.319"></a>
+<FONT color="green">320</FONT>            };<a name="line.320"></a>
+<FONT color="green">321</FONT>            <a name="line.321"></a>
+<FONT color="green">322</FONT>            /**<a name="line.322"></a>
+<FONT color="green">323</FONT>             * getCurrentVideoDevice<a name="line.323"></a>
+<FONT color="green">324</FONT>             * @return GetCurrentVideoDeviceResponse<a name="line.324"></a>
+<FONT color="green">325</FONT>             * &lt;br&gt; - mediatype<a name="line.325"></a>
+<FONT color="green">326</FONT>             * &lt;br&gt; - deviceName<a name="line.326"></a>
+<FONT color="green">327</FONT>             * &lt;br&gt; - devicePath<a name="line.327"></a>
+<FONT color="green">328</FONT>             */<a name="line.328"></a>
+<FONT color="green">329</FONT>            public GetCurrentVideoDeviceResponse getCurrentVideoDevice() {<a name="line.329"></a>
+<FONT color="green">330</FONT>                    try {<a name="line.330"></a>
+<FONT color="green">331</FONT>                            Decoding decoder = sidDoRequest(getCurrentVideoDevice_req)<a name="line.331"></a>
+<FONT color="green">332</FONT>                            .endRequest();<a name="line.332"></a>
+<FONT color="green">333</FONT>                            GetCurrentVideoDeviceResponse result = new GetCurrentVideoDeviceResponse();<a name="line.333"></a>
+<FONT color="green">334</FONT>                            result.mediatype = (MediaType) decoder.getEnumParm(1, MediaType.get(0), false);<a name="line.334"></a>
+<FONT color="green">335</FONT>                            result.deviceName = decoder.getStringParm(2, false);<a name="line.335"></a>
+<FONT color="green">336</FONT>                            result.devicePath = decoder.getStringParm(3, true);<a name="line.336"></a>
+<FONT color="green">337</FONT>                            return result;<a name="line.337"></a>
+<FONT color="green">338</FONT>                    } catch(IOException e) {<a name="line.338"></a>
+<FONT color="green">339</FONT>                            mSidRoot.sidOnFatalError(e);<a name="line.339"></a>
+<FONT color="green">340</FONT>                            return null;<a name="line.340"></a>
+<FONT color="green">341</FONT>                    }<a name="line.341"></a>
+<FONT color="green">342</FONT>            }<a name="line.342"></a>
+<FONT color="green">343</FONT>            /***<a name="line.343"></a>
+<FONT color="green">344</FONT>             * generic multiget of a list of Property<a name="line.344"></a>
+<FONT color="green">345</FONT>             * @param requested the list of requested properties of Video<a name="line.345"></a>
+<FONT color="green">346</FONT>             * @return SidGetResponding<a name="line.346"></a>
+<FONT color="green">347</FONT>             */<a name="line.347"></a>
+<FONT color="green">348</FONT>            public SidGetResponding sidMultiGet(Property[] requested) {<a name="line.348"></a>
+<FONT color="green">349</FONT>                    return super.sidMultiGet(requested);<a name="line.349"></a>
+<FONT color="green">350</FONT>            }<a name="line.350"></a>
+<FONT color="green">351</FONT>            /***<a name="line.351"></a>
+<FONT color="green">352</FONT>             * generic multiget of list of Property for a list of Video<a name="line.352"></a>
+<FONT color="green">353</FONT>             * @param requested the list of requested properties<a name="line.353"></a>
+<FONT color="green">354</FONT>             * @return SidGetResponding[] can be casted to (Video[]) if all properties are cached<a name="line.354"></a>
+<FONT color="green">355</FONT>             */<a name="line.355"></a>
+<FONT color="green">356</FONT>            static public SidGetResponding[] sidMultiGet(Property[] requested, Video[] objects) {<a name="line.356"></a>
+<FONT color="green">357</FONT>                    return SidObject.sidMultiGet(requested, objects);<a name="line.357"></a>
+<FONT color="green">358</FONT>            }<a name="line.358"></a>
+<FONT color="green">359</FONT>            /** Video.STATUS */<a name="line.359"></a>
+<FONT color="green">360</FONT>            public Status getStatus() {<a name="line.360"></a>
+<FONT color="green">361</FONT>                    synchronized(this) {<a name="line.361"></a>
+<FONT color="green">362</FONT>                            if ((mSidCached &amp; 0x1) != 0)<a name="line.362"></a>
+<FONT color="green">363</FONT>                                    return mStatus;<a name="line.363"></a>
+<FONT color="green">364</FONT>                    }<a name="line.364"></a>
+<FONT color="green">365</FONT>                    return (Status) sidRequestEnumProperty(Property.P_STATUS);<a name="line.365"></a>
+<FONT color="green">366</FONT>            }<a name="line.366"></a>
+<FONT color="green">367</FONT>            /** 'errorcode errortext'  */<a name="line.367"></a>
+<FONT color="green">368</FONT>            public String getError() {<a name="line.368"></a>
+<FONT color="green">369</FONT>                    synchronized(this) {<a name="line.369"></a>
+<FONT color="green">370</FONT>                            if ((mSidCached &amp; 0x2) != 0)<a name="line.370"></a>
+<FONT color="green">371</FONT>                                    return mError;<a name="line.371"></a>
+<FONT color="green">372</FONT>                    }<a name="line.372"></a>
+<FONT color="green">373</FONT>                    return sidRequestStringProperty(Property.P_ERROR);<a name="line.373"></a>
+<FONT color="green">374</FONT>            }<a name="line.374"></a>
+<FONT color="green">375</FONT>            /** space-separated string of tokens */<a name="line.375"></a>
+<FONT color="green">376</FONT>            public String getDebugInfo() {<a name="line.376"></a>
+<FONT color="green">377</FONT>                    synchronized(this) {<a name="line.377"></a>
+<FONT color="green">378</FONT>                            if ((mSidCached &amp; 0x4) != 0)<a name="line.378"></a>
+<FONT color="green">379</FONT>                                    return mDebugInfo;<a name="line.379"></a>
+<FONT color="green">380</FONT>                    }<a name="line.380"></a>
+<FONT color="green">381</FONT>                    return sidRequestStringProperty(Property.P_DEBUG_INFO);<a name="line.381"></a>
+<FONT color="green">382</FONT>            }<a name="line.382"></a>
+<FONT color="green">383</FONT>            /** This property does not currently work, always containing an empty string. For desktop video, you can get the frame dimensions from the video frame buffers API instead - the buffer struct retrieved with ipc.getFrame() or ipc.getNewFrame() has width and height fields, which you can then use in your UI. With RTP video solutions, you already have the frame sizes in your videohost code. Communicating these to the UI process is currently up to you.  */<a name="line.383"></a>
+<FONT color="green">384</FONT>            public String getDimensions() {<a name="line.384"></a>
+<FONT color="green">385</FONT>                    synchronized(this) {<a name="line.385"></a>
+<FONT color="green">386</FONT>                            if ((mSidCached &amp; 0x8) != 0)<a name="line.386"></a>
+<FONT color="green">387</FONT>                                    return mDimensions;<a name="line.387"></a>
+<FONT color="green">388</FONT>                    }<a name="line.388"></a>
+<FONT color="green">389</FONT>                    return sidRequestStringProperty(Property.P_DIMENSIONS);<a name="line.389"></a>
+<FONT color="green">390</FONT>            }<a name="line.390"></a>
+<FONT color="green">391</FONT>            /** Indicates whether the video object is streaming webcam video or screensharing session, values: MEDIA_SCREENSHARING, MEDIA_VIDEO  */<a name="line.391"></a>
+<FONT color="green">392</FONT>            public MediaType getMediaType() {<a name="line.392"></a>
+<FONT color="green">393</FONT>                    synchronized(this) {<a name="line.393"></a>
+<FONT color="green">394</FONT>                            if ((mSidCached &amp; 0x10) != 0)<a name="line.394"></a>
+<FONT color="green">395</FONT>                                    return mMediaType;<a name="line.395"></a>
+<FONT color="green">396</FONT>                    }<a name="line.396"></a>
+<FONT color="green">397</FONT>                    return (MediaType) sidRequestEnumProperty(Property.P_MEDIA_TYPE);<a name="line.397"></a>
+<FONT color="green">398</FONT>            }<a name="line.398"></a>
+<FONT color="green">399</FONT>            /** conference id to be able to identify remote/local video in the same call */<a name="line.399"></a>
+<FONT color="green">400</FONT>            public Conversation getConvoId() {<a name="line.400"></a>
+<FONT color="green">401</FONT>                    synchronized(this) {<a name="line.401"></a>
+<FONT color="green">402</FONT>                            if ((mSidCached &amp; 0x20) != 0)<a name="line.402"></a>
+<FONT color="green">403</FONT>                                    return mConvoId;<a name="line.403"></a>
+<FONT color="green">404</FONT>                    }<a name="line.404"></a>
+<FONT color="green">405</FONT>                    return (Conversation) sidRequestObjectProperty(Property.P_CONVO_ID);<a name="line.405"></a>
+<FONT color="green">406</FONT>            }<a name="line.406"></a>
+<FONT color="green">407</FONT>            /** device path used by video object */<a name="line.407"></a>
+<FONT color="green">408</FONT>            public String getDevicePath() {<a name="line.408"></a>
+<FONT color="green">409</FONT>                    synchronized(this) {<a name="line.409"></a>
+<FONT color="green">410</FONT>                            if ((mSidCached &amp; 0x40) != 0)<a name="line.410"></a>
+<FONT color="green">411</FONT>                                    return mDevicePath;<a name="line.411"></a>
+<FONT color="green">412</FONT>                    }<a name="line.412"></a>
+<FONT color="green">413</FONT>                    return sidRequestStringProperty(Property.P_DEVICE_PATH);<a name="line.413"></a>
+<FONT color="green">414</FONT>            }<a name="line.414"></a>
+<FONT color="green">415</FONT>            public String sidGetStringProperty(final PropertyEnumConverting prop) {<a name="line.415"></a>
+<FONT color="green">416</FONT>                    switch(prop.getId()) {<a name="line.416"></a>
+<FONT color="green">417</FONT>                    case 131:<a name="line.417"></a>
+<FONT color="green">418</FONT>                            return mError;<a name="line.418"></a>
+<FONT color="green">419</FONT>                    case 132:<a name="line.419"></a>
+<FONT color="green">420</FONT>                            return mDebugInfo;<a name="line.420"></a>
+<FONT color="green">421</FONT>                    case 133:<a name="line.421"></a>
+<FONT color="green">422</FONT>                            return mDimensions;<a name="line.422"></a>
+<FONT color="green">423</FONT>                    case 1105:<a name="line.423"></a>
+<FONT color="green">424</FONT>                            return mDevicePath;<a name="line.424"></a>
+<FONT color="green">425</FONT>                    }<a name="line.425"></a>
+<FONT color="green">426</FONT>                    return "";<a name="line.426"></a>
+<FONT color="green">427</FONT>            }<a name="line.427"></a>
+<FONT color="green">428</FONT>            public SidObject sidGetObjectProperty(final PropertyEnumConverting prop) {<a name="line.428"></a>
+<FONT color="green">429</FONT>                    assert(prop.getId() == 1104);<a name="line.429"></a>
+<FONT color="green">430</FONT>                    return mConvoId;<a name="line.430"></a>
+<FONT color="green">431</FONT>            }<a name="line.431"></a>
+<FONT color="green">432</FONT>            public EnumConverting sidGetEnumProperty(final PropertyEnumConverting prop) {<a name="line.432"></a>
+<FONT color="green">433</FONT>                    switch(prop.getId()) {<a name="line.433"></a>
+<FONT color="green">434</FONT>                    case 130:<a name="line.434"></a>
+<FONT color="green">435</FONT>                            return mStatus;<a name="line.435"></a>
+<FONT color="green">436</FONT>                    case 134:<a name="line.436"></a>
+<FONT color="green">437</FONT>                            return mMediaType;<a name="line.437"></a>
+<FONT color="green">438</FONT>                    }<a name="line.438"></a>
+<FONT color="green">439</FONT>                    return null;<a name="line.439"></a>
+<FONT color="green">440</FONT>            }<a name="line.440"></a>
+<FONT color="green">441</FONT>            public String getPropertyAsString(final int prop) {<a name="line.441"></a>
+<FONT color="green">442</FONT>                    switch (prop) {<a name="line.442"></a>
+<FONT color="green">443</FONT>                    case 130: return getStatus().toString();<a name="line.443"></a>
+<FONT color="green">444</FONT>                    case 131: return getError();<a name="line.444"></a>
+<FONT color="green">445</FONT>                    case 132: return getDebugInfo();<a name="line.445"></a>
+<FONT color="green">446</FONT>                    case 133: return getDimensions();<a name="line.446"></a>
+<FONT color="green">447</FONT>                    case 134: return getMediaType().toString();<a name="line.447"></a>
+<FONT color="green">448</FONT>                    case 1104: return getConvoId() != null ? Integer.toString(getConvoId().getOid()) : "(null)";<a name="line.448"></a>
+<FONT color="green">449</FONT>                    case 1105: return getDevicePath();<a name="line.449"></a>
+<FONT color="green">450</FONT>                    }<a name="line.450"></a>
+<FONT color="green">451</FONT>                    return "&lt;unkown&gt;";<a name="line.451"></a>
+<FONT color="green">452</FONT>            }<a name="line.452"></a>
+<FONT color="green">453</FONT>            public String getPropertyAsString(final Property prop) {<a name="line.453"></a>
+<FONT color="green">454</FONT>                    return getPropertyAsString(prop.getId());<a name="line.454"></a>
+<FONT color="green">455</FONT>            }<a name="line.455"></a>
+<FONT color="green">456</FONT>            protected void sidOnChangedProperty(final int propertyId, final int value, final String svalue) {<a name="line.456"></a>
+<FONT color="green">457</FONT>                    final Property property = Property.get(propertyId);<a name="line.457"></a>
+<FONT color="green">458</FONT>                    if (property == Property.P_UNKNOWN) return;<a name="line.458"></a>
+<FONT color="green">459</FONT>                    final int idx = property.getIdx();<a name="line.459"></a>
+<FONT color="green">460</FONT>                    if (idx != 0) {<a name="line.460"></a>
+<FONT color="green">461</FONT>                            int bit  = 1&lt;&lt;((idx-1)%32);<a name="line.461"></a>
+<FONT color="green">462</FONT>                            synchronized (this) {<a name="line.462"></a>
+<FONT color="green">463</FONT>                                    mSidCached|=bit;<a name="line.463"></a>
+<FONT color="green">464</FONT>                                    switch (propertyId) {<a name="line.464"></a>
+<FONT color="green">465</FONT>                                    case 130: mStatus = Status.get(value); break;<a name="line.465"></a>
+<FONT color="green">466</FONT>                                    case 131:<a name="line.466"></a>
+<FONT color="green">467</FONT>                                            if (svalue != null) mError = svalue;<a name="line.467"></a>
+<FONT color="green">468</FONT>                                            else mSidCached &amp;=~bit;<a name="line.468"></a>
+<FONT color="green">469</FONT>                                            break;<a name="line.469"></a>
+<FONT color="green">470</FONT>                                    case 132:<a name="line.470"></a>
+<FONT color="green">471</FONT>                                            if (svalue != null) mDebugInfo = svalue;<a name="line.471"></a>
+<FONT color="green">472</FONT>                                            else mSidCached &amp;=~bit;<a name="line.472"></a>
+<FONT color="green">473</FONT>                                            break;<a name="line.473"></a>
+<FONT color="green">474</FONT>                                    case 133:<a name="line.474"></a>
+<FONT color="green">475</FONT>                                            if (svalue != null) mDimensions = svalue;<a name="line.475"></a>
+<FONT color="green">476</FONT>                                            else mSidCached &amp;=~bit;<a name="line.476"></a>
+<FONT color="green">477</FONT>                                            break;<a name="line.477"></a>
+<FONT color="green">478</FONT>                                    case 134: mMediaType = MediaType.get(value); break;<a name="line.478"></a>
+<FONT color="green">479</FONT>                                    case 1104:<a name="line.479"></a>
+<FONT color="green">480</FONT>                                            if (value != 0)<a name="line.480"></a>
+<FONT color="green">481</FONT>                                                    mConvoId = (Conversation) mSidRoot.sidGetObject(property.getModuleId(), value);<a name="line.481"></a>
+<FONT color="green">482</FONT>                                            else {<a name="line.482"></a>
+<FONT color="green">483</FONT>                                                    mConvoId = null;<a name="line.483"></a>
+<FONT color="green">484</FONT>                                                    mSidCached &amp;=~bit;<a name="line.484"></a>
+<FONT color="green">485</FONT>                                            }<a name="line.485"></a>
+<FONT color="green">486</FONT>                                            break;<a name="line.486"></a>
+<FONT color="green">487</FONT>                                    case 1105:<a name="line.487"></a>
+<FONT color="green">488</FONT>                                            if (svalue != null) mDevicePath = svalue;<a name="line.488"></a>
+<FONT color="green">489</FONT>                                            else mSidCached &amp;=~bit;<a name="line.489"></a>
+<FONT color="green">490</FONT>                                            break;<a name="line.490"></a>
+<FONT color="green">491</FONT>                                    default: mSidCached&amp;=~bit; break;<a name="line.491"></a>
+<FONT color="green">492</FONT>                                    }<a name="line.492"></a>
+<FONT color="green">493</FONT>                            }<a name="line.493"></a>
+<FONT color="green">494</FONT>                    }<a name="line.494"></a>
+<FONT color="green">495</FONT>                    VideoListener listener = ((Skype) mSidRoot).getVideoListener();<a name="line.495"></a>
+<FONT color="green">496</FONT>                    if (listener != null)<a name="line.496"></a>
+<FONT color="green">497</FONT>                            listener.onPropertyChange(this, property, value, svalue);<a name="line.497"></a>
+<FONT color="green">498</FONT>            }<a name="line.498"></a>
+<FONT color="green">499</FONT>            public void sidSetProperty(final PropertyEnumConverting prop, final String newValue) {<a name="line.499"></a>
+<FONT color="green">500</FONT>                    final int propId = prop.getId();<a name="line.500"></a>
+<FONT color="green">501</FONT>                    switch(propId) {<a name="line.501"></a>
+<FONT color="green">502</FONT>                    case 131:<a name="line.502"></a>
+<FONT color="green">503</FONT>                            mSidCached |= 0x2;<a name="line.503"></a>
+<FONT color="green">504</FONT>                            mError=  newValue;<a name="line.504"></a>
+<FONT color="green">505</FONT>                            break;<a name="line.505"></a>
+<FONT color="green">506</FONT>                    case 132:<a name="line.506"></a>
+<FONT color="green">507</FONT>                            mSidCached |= 0x4;<a name="line.507"></a>
+<FONT color="green">508</FONT>                            mDebugInfo=  newValue;<a name="line.508"></a>
+<FONT color="green">509</FONT>                            break;<a name="line.509"></a>
+<FONT color="green">510</FONT>                    case 133:<a name="line.510"></a>
+<FONT color="green">511</FONT>                            mSidCached |= 0x8;<a name="line.511"></a>
+<FONT color="green">512</FONT>                            mDimensions=  newValue;<a name="line.512"></a>
+<FONT color="green">513</FONT>                            break;<a name="line.513"></a>
+<FONT color="green">514</FONT>                    case 1105:<a name="line.514"></a>
+<FONT color="green">515</FONT>                            mSidCached |= 0x40;<a name="line.515"></a>
+<FONT color="green">516</FONT>                            mDevicePath=  newValue;<a name="line.516"></a>
+<FONT color="green">517</FONT>                            break;<a name="line.517"></a>
+<FONT color="green">518</FONT>                    }<a name="line.518"></a>
+<FONT color="green">519</FONT>            }<a name="line.519"></a>
+<FONT color="green">520</FONT>            public void sidSetProperty(final PropertyEnumConverting prop, final SidObject newValue) {<a name="line.520"></a>
+<FONT color="green">521</FONT>                    final int propId = prop.getId();<a name="line.521"></a>
+<FONT color="green">522</FONT>                    assert(propId == 1104);<a name="line.522"></a>
+<FONT color="green">523</FONT>                    mSidCached |= 0x20;<a name="line.523"></a>
+<FONT color="green">524</FONT>                    mConvoId= (Conversation) newValue;<a name="line.524"></a>
+<FONT color="green">525</FONT>            }<a name="line.525"></a>
+<FONT color="green">526</FONT>            public void sidSetProperty(final PropertyEnumConverting prop, final int newValue) {<a name="line.526"></a>
+<FONT color="green">527</FONT>                    final int propId = prop.getId();<a name="line.527"></a>
+<FONT color="green">528</FONT>                    switch(propId) {<a name="line.528"></a>
+<FONT color="green">529</FONT>                    case 130:<a name="line.529"></a>
+<FONT color="green">530</FONT>                            mSidCached |= 0x1;<a name="line.530"></a>
+<FONT color="green">531</FONT>                            mStatus= Status.get(newValue);<a name="line.531"></a>
+<FONT color="green">532</FONT>                            break;<a name="line.532"></a>
+<FONT color="green">533</FONT>                    case 134:<a name="line.533"></a>
+<FONT color="green">534</FONT>                            mSidCached |= 0x10;<a name="line.534"></a>
+<FONT color="green">535</FONT>                            mMediaType= MediaType.get(newValue);<a name="line.535"></a>
+<FONT color="green">536</FONT>                            break;<a name="line.536"></a>
+<FONT color="green">537</FONT>                    }<a name="line.537"></a>
+<FONT color="green">538</FONT>            }<a name="line.538"></a>
+<FONT color="green">539</FONT>            public Status       mStatus;<a name="line.539"></a>
+<FONT color="green">540</FONT>            public String       mError;<a name="line.540"></a>
+<FONT color="green">541</FONT>            public String       mDebugInfo;<a name="line.541"></a>
+<FONT color="green">542</FONT>            public String       mDimensions;<a name="line.542"></a>
+<FONT color="green">543</FONT>            public MediaType    mMediaType;<a name="line.543"></a>
+<FONT color="green">544</FONT>            public Conversation mConvoId;<a name="line.544"></a>
+<FONT color="green">545</FONT>            public String       mDevicePath;<a name="line.545"></a>
+<FONT color="green">546</FONT>            public int moduleId() {<a name="line.546"></a>
+<FONT color="green">547</FONT>                    return 11;<a name="line.547"></a>
+<FONT color="green">548</FONT>            }<a name="line.548"></a>
+<FONT color="green">549</FONT>            <a name="line.549"></a>
+<FONT color="green">550</FONT>            public Video(final int oid, final SidRoot root) {<a name="line.550"></a>
+<FONT color="green">551</FONT>                    super(oid, root, 7);<a name="line.551"></a>
+<FONT color="green">552</FONT>            }<a name="line.552"></a>
+<FONT color="green">553</FONT>    }<a name="line.553"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

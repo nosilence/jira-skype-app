@@ -1,0 +1,6 @@
+PCMInterface implementation with input/output WAVE audio files using libaudiofile, you can install with the following command:
+sudo apt-get install libaudiofile-dev
+
+Filenames are taken from commandline, e.g.
+./voicepcmhost-file -i input.wav -o output.wav 
+it will take mic input from input.wav (you can randomly choose an .wav as input, you may want to have the .wav be able to play for a reasonable long time for testing), and write output to output.wav. input.wav and output.wav can be in the same place as executable, they can also be specified by relative or absolute paths.

@@ -1,0 +1,1057 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    package com.skype.api;<a name="line.1"></a>
+<FONT color="green">002</FONT>    <a name="line.2"></a>
+<FONT color="green">003</FONT>    import com.skype.ipc.SidRoot;<a name="line.3"></a>
+<FONT color="green">004</FONT>    import com.skype.ipc.SidObject;<a name="line.4"></a>
+<FONT color="green">005</FONT>    import com.skype.ipc.EnumConverting;<a name="line.5"></a>
+<FONT color="green">006</FONT>    import com.skype.ipc.PropertyEnumConverting;<a name="line.6"></a>
+<FONT color="green">007</FONT>    import com.skype.ipc.Decoding;<a name="line.7"></a>
+<FONT color="green">008</FONT>    import com.skype.ipc.Encoding;<a name="line.8"></a>
+<FONT color="green">009</FONT>    import com.skype.ipc.Encoding;<a name="line.9"></a>
+<FONT color="green">010</FONT>    import java.io.IOException;<a name="line.10"></a>
+<FONT color="green">011</FONT>    import com.skype.ipc.PropertyEnumConverting;<a name="line.11"></a>
+<FONT color="green">012</FONT>    import com.skype.api.Skype;<a name="line.12"></a>
+<FONT color="green">013</FONT>    import com.skype.ipc.SidGetResponding;<a name="line.13"></a>
+<FONT color="green">014</FONT>    <a name="line.14"></a>
+<FONT color="green">015</FONT>    /** Conversation participant class. Instances of this class represent contacts when in the context of conversations. Amongst others, this class has a Ring method for requesting live status with the target contact. This class also holds typing indicator property and access rights for the contact in context of public conversations.  */<a name="line.15"></a>
+<FONT color="green">016</FONT>    public final class Participant extends SidObject {<a name="line.16"></a>
+<FONT color="green">017</FONT>            /** Recognized values for the P_RANK property. The P_RANK controls participant's privileges in the conversation. See Participant.CanSetRankTo and Participant.SetRankTo methods.  */<a name="line.17"></a>
+<FONT color="green">018</FONT>            public enum Rank implements EnumConverting {<a name="line.18"></a>
+<FONT color="green">019</FONT>                    /** Creator of the chat. There can be only one participant with this type per conversation. Other participants cannot be promoted to Creator rank.  */<a name="line.19"></a>
+<FONT color="green">020</FONT>                    CREATOR  (1),<a name="line.20"></a>
+<FONT color="green">021</FONT>                    /** Participant who has administrator privileges  */<a name="line.21"></a>
+<FONT color="green">022</FONT>                    ADMIN    (2),<a name="line.22"></a>
+<FONT color="green">023</FONT>                    /** Participant who can speak and write  */<a name="line.23"></a>
+<FONT color="green">024</FONT>                    SPEAKER  (3),<a name="line.24"></a>
+<FONT color="green">025</FONT>                    /** Participant who can write but not speak  */<a name="line.25"></a>
+<FONT color="green">026</FONT>                    WRITER   (4),<a name="line.26"></a>
+<FONT color="green">027</FONT>                    /** Participant who can read but not write/speak  */<a name="line.27"></a>
+<FONT color="green">028</FONT>                    SPECTATOR(5),<a name="line.28"></a>
+<FONT color="green">029</FONT>                    /** Participant who is applying to join the conversation. Member cannot be demoted to applicants once they have been accepted.   */<a name="line.29"></a>
+<FONT color="green">030</FONT>                    APPLICANT(6),<a name="line.30"></a>
+<FONT color="green">031</FONT>                    /** Participant who has eft or has been kicked from the conversation  */<a name="line.31"></a>
+<FONT color="green">032</FONT>                    RETIRED  (7),<a name="line.32"></a>
+<FONT color="green">033</FONT>                    /** Participant who has been banned from the chat  */<a name="line.33"></a>
+<FONT color="green">034</FONT>                    OUTLAW   (8);<a name="line.34"></a>
+<FONT color="green">035</FONT>                    private final int key;<a name="line.35"></a>
+<FONT color="green">036</FONT>                    Rank(int key) {<a name="line.36"></a>
+<FONT color="green">037</FONT>                            this.key = key;<a name="line.37"></a>
+<FONT color="green">038</FONT>                    };<a name="line.38"></a>
+<FONT color="green">039</FONT>                    public int getId()   { return key; }<a name="line.39"></a>
+<FONT color="green">040</FONT>                    public EnumConverting getDefault() { return CREATOR; }<a name="line.40"></a>
+<FONT color="green">041</FONT>                    public EnumConverting convert(int from) { return Rank.get(from); }<a name="line.41"></a>
+<FONT color="green">042</FONT>                    public EnumConverting[] getArray(final int size) { return new Rank[size]; }<a name="line.42"></a>
+<FONT color="green">043</FONT>                    public static Rank get(int from) {<a name="line.43"></a>
+<FONT color="green">044</FONT>                            switch (from) {<a name="line.44"></a>
+<FONT color="green">045</FONT>                            case 1: return CREATOR;<a name="line.45"></a>
+<FONT color="green">046</FONT>                            case 2: return ADMIN;<a name="line.46"></a>
+<FONT color="green">047</FONT>                            case 3: return SPEAKER;<a name="line.47"></a>
+<FONT color="green">048</FONT>                            case 4: return WRITER;<a name="line.48"></a>
+<FONT color="green">049</FONT>                            case 5: return SPECTATOR;<a name="line.49"></a>
+<FONT color="green">050</FONT>                            case 6: return APPLICANT;<a name="line.50"></a>
+<FONT color="green">051</FONT>                            case 7: return RETIRED;<a name="line.51"></a>
+<FONT color="green">052</FONT>                            case 8: return OUTLAW;<a name="line.52"></a>
+<FONT color="green">053</FONT>                            }<a name="line.53"></a>
+<FONT color="green">054</FONT>                            return CREATOR;<a name="line.54"></a>
+<FONT color="green">055</FONT>                    }<a name="line.55"></a>
+<FONT color="green">056</FONT>                    public static final int CREATOR_VALUE   = 1;<a name="line.56"></a>
+<FONT color="green">057</FONT>                    public static final int ADMIN_VALUE     = 2;<a name="line.57"></a>
+<FONT color="green">058</FONT>                    public static final int SPEAKER_VALUE   = 3;<a name="line.58"></a>
+<FONT color="green">059</FONT>                    public static final int WRITER_VALUE    = 4;<a name="line.59"></a>
+<FONT color="green">060</FONT>                    public static final int SPECTATOR_VALUE = 5;<a name="line.60"></a>
+<FONT color="green">061</FONT>                    public static final int APPLICANT_VALUE = 6;<a name="line.61"></a>
+<FONT color="green">062</FONT>                    public static final int RETIRED_VALUE   = 7;<a name="line.62"></a>
+<FONT color="green">063</FONT>                    public static final int OUTLAW_VALUE    = 8;<a name="line.63"></a>
+<FONT color="green">064</FONT>            }<a name="line.64"></a>
+<FONT color="green">065</FONT>            /**<a name="line.65"></a>
+<FONT color="green">066</FONT>             * Recognized values for the P_TEXT_STATUS property. The P_TEXT_STATUS property has two uses. Firstly, you can use it to implement typing indicators in your UI, to notify the local user that an incoming chat message from this Participant is imminent.  <a name="line.66"></a>
+<FONT color="green">067</FONT>             * <a name="line.67"></a>
+<FONT color="green">068</FONT>             * To set the P_TEXT_STATUS value, so that remote client UIs can display the local user's typing indicator in their UI, use Conversation.SetMyTextStatusTo method. <a name="line.68"></a>
+<FONT color="green">069</FONT>             * <a name="line.69"></a>
+<FONT color="green">070</FONT>             * Transmission of P_TEXT_STATUS updates to remote participants of conversations is controlled via SETUPKEY_DISABLE_CHAT_ACTIVITY_INDICATION setup key. <a name="line.70"></a>
+<FONT color="green">071</FONT>             * <a name="line.71"></a>
+<FONT color="green">072</FONT>             * Secondly, the TEXT_NA value enables you to detect participants who are running clients with no chat capability. <a name="line.72"></a>
+<FONT color="green">073</FONT>             */<a name="line.73"></a>
+<FONT color="green">074</FONT>            public enum TextStatus implements EnumConverting {<a name="line.74"></a>
+<FONT color="green">075</FONT>                    /** Fallback state in case the text status is not (yet) deternmined.  */<a name="line.75"></a>
+<FONT color="green">076</FONT>                    TEXT_UNKNOWN    (0),<a name="line.76"></a>
+<FONT color="green">077</FONT>                    /** Text status is not applicable as the participant is using a Skype client that does not support chat (for example: voice-only USB phones).  */<a name="line.77"></a>
+<FONT color="green">078</FONT>                    TEXT_NA         (1),<a name="line.78"></a>
+<FONT color="green">079</FONT>                    /** Participant is currently not typing.  */<a name="line.79"></a>
+<FONT color="green">080</FONT>                    READING         (2),<a name="line.80"></a>
+<FONT color="green">081</FONT>                    /** Participant is currently typing.  */<a name="line.81"></a>
+<FONT color="green">082</FONT>                    WRITING         (3),<a name="line.82"></a>
+<FONT color="green">083</FONT>                    /**<a name="line.83"></a>
+<FONT color="green">084</FONT>                     * This state should be set when following two conditions are true: <a name="line.84"></a>
+<FONT color="green">085</FONT>                     *  - interval between keypresses are less than 20 ms; <a name="line.85"></a>
+<FONT color="green">086</FONT>                     *  - at least one of the keys adjacent to current key are pressed down. <a name="line.86"></a>
+<FONT color="green">087</FONT>                     */<a name="line.87"></a>
+<FONT color="green">088</FONT>                    WRITING_AS_ANGRY(4),<a name="line.88"></a>
+<FONT color="green">089</FONT>                    /** The "Cat on keyboard detection" algorthm in Skype is implemented in the UI level, and as such is not present in the SkypeKit API. Should you wish to implement similar algorthm in your own UI, you can get the basic logic from the PawSense FAQ - http://www.bitboost.com/pawsense/pawsense-faq.html  */<a name="line.89"></a>
+<FONT color="green">090</FONT>                    WRITING_AS_CAT  (5);<a name="line.90"></a>
+<FONT color="green">091</FONT>                    private final int key;<a name="line.91"></a>
+<FONT color="green">092</FONT>                    TextStatus(int key) {<a name="line.92"></a>
+<FONT color="green">093</FONT>                            this.key = key;<a name="line.93"></a>
+<FONT color="green">094</FONT>                    };<a name="line.94"></a>
+<FONT color="green">095</FONT>                    public int getId()   { return key; }<a name="line.95"></a>
+<FONT color="green">096</FONT>                    public EnumConverting getDefault() { return TEXT_UNKNOWN; }<a name="line.96"></a>
+<FONT color="green">097</FONT>                    public EnumConverting convert(int from) { return TextStatus.get(from); }<a name="line.97"></a>
+<FONT color="green">098</FONT>                    public EnumConverting[] getArray(final int size) { return new TextStatus[size]; }<a name="line.98"></a>
+<FONT color="green">099</FONT>                    public static TextStatus get(int from) {<a name="line.99"></a>
+<FONT color="green">100</FONT>                            switch (from) {<a name="line.100"></a>
+<FONT color="green">101</FONT>                            case 0: return TEXT_UNKNOWN;<a name="line.101"></a>
+<FONT color="green">102</FONT>                            case 1: return TEXT_NA;<a name="line.102"></a>
+<FONT color="green">103</FONT>                            case 2: return READING;<a name="line.103"></a>
+<FONT color="green">104</FONT>                            case 3: return WRITING;<a name="line.104"></a>
+<FONT color="green">105</FONT>                            case 4: return WRITING_AS_ANGRY;<a name="line.105"></a>
+<FONT color="green">106</FONT>                            case 5: return WRITING_AS_CAT;<a name="line.106"></a>
+<FONT color="green">107</FONT>                            }<a name="line.107"></a>
+<FONT color="green">108</FONT>                            return TEXT_UNKNOWN;<a name="line.108"></a>
+<FONT color="green">109</FONT>                    }<a name="line.109"></a>
+<FONT color="green">110</FONT>                    public static final int TEXT_UNKNOWN_VALUE     = 0;<a name="line.110"></a>
+<FONT color="green">111</FONT>                    public static final int TEXT_NA_VALUE          = 1;<a name="line.111"></a>
+<FONT color="green">112</FONT>                    public static final int READING_VALUE          = 2;<a name="line.112"></a>
+<FONT color="green">113</FONT>                    public static final int WRITING_VALUE          = 3;<a name="line.113"></a>
+<FONT color="green">114</FONT>                    public static final int WRITING_AS_ANGRY_VALUE = 4;<a name="line.114"></a>
+<FONT color="green">115</FONT>                    public static final int WRITING_AS_CAT_VALUE   = 5;<a name="line.115"></a>
+<FONT color="green">116</FONT>            }<a name="line.116"></a>
+<FONT color="green">117</FONT>            /** Recognized values for the P_VOICE_STATUS property.   */<a name="line.117"></a>
+<FONT color="green">118</FONT>            public enum VoiceStatus implements EnumConverting {<a name="line.118"></a>
+<FONT color="green">119</FONT>                    /** Participant voice status is not (yet) determined.  */<a name="line.119"></a>
+<FONT color="green">120</FONT>                    VOICE_UNKNOWN   (0),<a name="line.120"></a>
+<FONT color="green">121</FONT>                    /** Participant is using a Skype client with no audio capability.  */<a name="line.121"></a>
+<FONT color="green">122</FONT>                    VOICE_NA        (1),<a name="line.122"></a>
+<FONT color="green">123</FONT>                    /** Participant is using a Skype client that supports audio.  */<a name="line.123"></a>
+<FONT color="green">124</FONT>                    VOICE_AVAILABLE (2),<a name="line.124"></a>
+<FONT color="green">125</FONT>                    /** Participant is in process of joining current live session. This is a transitional state.  */<a name="line.125"></a>
+<FONT color="green">126</FONT>                    VOICE_CONNECTING(3),<a name="line.126"></a>
+<FONT color="green">127</FONT>                    /** Participant has been invited to join the live session but has not yet accepted.  */<a name="line.127"></a>
+<FONT color="green">128</FONT>                    RINGING         (4),<a name="line.128"></a>
+<FONT color="green">129</FONT>                    /** Participant is in process of joining current live session. This is another transitional state.  */<a name="line.129"></a>
+<FONT color="green">130</FONT>                    EARLY_MEDIA     (5),<a name="line.130"></a>
+<FONT color="green">131</FONT>                    /** Participant has joined the current live session but is currently not transmitting audio.  */<a name="line.131"></a>
+<FONT color="green">132</FONT>                    LISTENING       (6),<a name="line.132"></a>
+<FONT color="green">133</FONT>                    /** Participant has joined the current live session and is transmitting audio. The UI can either use this state to display appropriate "speaking" notification, or alternatively use Participant.P_SOUND_LEVEL if you want your speaking indicator to also reflect audio volume coming from the Participant.  */<a name="line.133"></a>
+<FONT color="green">134</FONT>                    SPEAKING        (7),<a name="line.134"></a>
+<FONT color="green">135</FONT>                    /** Participant has joined the current live session but the audio is currently on hold.  */<a name="line.135"></a>
+<FONT color="green">136</FONT>                    VOICE_ON_HOLD   (8),<a name="line.136"></a>
+<FONT color="green">137</FONT>                    /** Participant will be placed in this state for some seconds after live session has finished. This is another transitional state.  */<a name="line.137"></a>
+<FONT color="green">138</FONT>                    VOICE_STOPPED   (9);<a name="line.138"></a>
+<FONT color="green">139</FONT>                    private final int key;<a name="line.139"></a>
+<FONT color="green">140</FONT>                    VoiceStatus(int key) {<a name="line.140"></a>
+<FONT color="green">141</FONT>                            this.key = key;<a name="line.141"></a>
+<FONT color="green">142</FONT>                    };<a name="line.142"></a>
+<FONT color="green">143</FONT>                    public int getId()   { return key; }<a name="line.143"></a>
+<FONT color="green">144</FONT>                    public EnumConverting getDefault() { return VOICE_UNKNOWN; }<a name="line.144"></a>
+<FONT color="green">145</FONT>                    public EnumConverting convert(int from) { return VoiceStatus.get(from); }<a name="line.145"></a>
+<FONT color="green">146</FONT>                    public EnumConverting[] getArray(final int size) { return new VoiceStatus[size]; }<a name="line.146"></a>
+<FONT color="green">147</FONT>                    public static VoiceStatus get(int from) {<a name="line.147"></a>
+<FONT color="green">148</FONT>                            switch (from) {<a name="line.148"></a>
+<FONT color="green">149</FONT>                            case 0: return VOICE_UNKNOWN;<a name="line.149"></a>
+<FONT color="green">150</FONT>                            case 1: return VOICE_NA;<a name="line.150"></a>
+<FONT color="green">151</FONT>                            case 2: return VOICE_AVAILABLE;<a name="line.151"></a>
+<FONT color="green">152</FONT>                            case 3: return VOICE_CONNECTING;<a name="line.152"></a>
+<FONT color="green">153</FONT>                            case 4: return RINGING;<a name="line.153"></a>
+<FONT color="green">154</FONT>                            case 5: return EARLY_MEDIA;<a name="line.154"></a>
+<FONT color="green">155</FONT>                            case 6: return LISTENING;<a name="line.155"></a>
+<FONT color="green">156</FONT>                            case 7: return SPEAKING;<a name="line.156"></a>
+<FONT color="green">157</FONT>                            case 8: return VOICE_ON_HOLD;<a name="line.157"></a>
+<FONT color="green">158</FONT>                            case 9: return VOICE_STOPPED;<a name="line.158"></a>
+<FONT color="green">159</FONT>                            }<a name="line.159"></a>
+<FONT color="green">160</FONT>                            return VOICE_UNKNOWN;<a name="line.160"></a>
+<FONT color="green">161</FONT>                    }<a name="line.161"></a>
+<FONT color="green">162</FONT>                    public static final int VOICE_UNKNOWN_VALUE    = 0;<a name="line.162"></a>
+<FONT color="green">163</FONT>                    public static final int VOICE_NA_VALUE         = 1;<a name="line.163"></a>
+<FONT color="green">164</FONT>                    public static final int VOICE_AVAILABLE_VALUE  = 2;<a name="line.164"></a>
+<FONT color="green">165</FONT>                    public static final int VOICE_CONNECTING_VALUE = 3;<a name="line.165"></a>
+<FONT color="green">166</FONT>                    public static final int RINGING_VALUE          = 4;<a name="line.166"></a>
+<FONT color="green">167</FONT>                    public static final int EARLY_MEDIA_VALUE      = 5;<a name="line.167"></a>
+<FONT color="green">168</FONT>                    public static final int LISTENING_VALUE        = 6;<a name="line.168"></a>
+<FONT color="green">169</FONT>                    public static final int SPEAKING_VALUE         = 7;<a name="line.169"></a>
+<FONT color="green">170</FONT>                    public static final int VOICE_ON_HOLD_VALUE    = 8;<a name="line.170"></a>
+<FONT color="green">171</FONT>                    public static final int VOICE_STOPPED_VALUE    = 9;<a name="line.171"></a>
+<FONT color="green">172</FONT>            }<a name="line.172"></a>
+<FONT color="green">173</FONT>            /** Recognized values for the P_VIDEO_STATUS property. This property applies to Participant's video send capability, not capability to receive video.  */<a name="line.173"></a>
+<FONT color="green">174</FONT>            public enum VideoStatus implements EnumConverting {<a name="line.174"></a>
+<FONT color="green">175</FONT>                    /** Video status is not (yet) determined.  */<a name="line.175"></a>
+<FONT color="green">176</FONT>                    VIDEO_UNKNOWN   (0),<a name="line.176"></a>
+<FONT color="green">177</FONT>                    /** Indicates that this Participant does not have video available..  */<a name="line.177"></a>
+<FONT color="green">178</FONT>                    VIDEO_NA        (1),<a name="line.178"></a>
+<FONT color="green">179</FONT>                    /** Indicates that video is available for this participant. When the Participant.P_VIDEO_STATUS obtains this state, it is possible to retrieve the Video object, using Participant.GetVideo method. Further operations, such as starting or stopping the video send/receive will then go through the Video object.  */          VIDEO_AVAILABLE (2),<a name="line.179"></a>
+<FONT color="green">180</FONT>                    /** Transitional state indicating that the Participant is attempting to initiate video send.  */<a name="line.180"></a>
+<FONT color="green">181</FONT>                    VIDEO_CONNECTING(3),<a name="line.181"></a>
+<FONT color="green">182</FONT>                    /** Indicates that the participant is currently sending video.  */<a name="line.182"></a>
+<FONT color="green">183</FONT>                    STREAMING       (4),<a name="line.183"></a>
+<FONT color="green">184</FONT>                    /** Indicates that the participant video send is currently paused.  */<a name="line.184"></a>
+<FONT color="green">185</FONT>                    VIDEO_ON_HOLD   (5);<a name="line.185"></a>
+<FONT color="green">186</FONT>                    private final int key;<a name="line.186"></a>
+<FONT color="green">187</FONT>                    VideoStatus(int key) {<a name="line.187"></a>
+<FONT color="green">188</FONT>                            this.key = key;<a name="line.188"></a>
+<FONT color="green">189</FONT>                    };<a name="line.189"></a>
+<FONT color="green">190</FONT>                    public int getId()   { return key; }<a name="line.190"></a>
+<FONT color="green">191</FONT>                    public EnumConverting getDefault() { return VIDEO_UNKNOWN; }<a name="line.191"></a>
+<FONT color="green">192</FONT>                    public EnumConverting convert(int from) { return VideoStatus.get(from); }<a name="line.192"></a>
+<FONT color="green">193</FONT>                    public EnumConverting[] getArray(final int size) { return new VideoStatus[size]; }<a name="line.193"></a>
+<FONT color="green">194</FONT>                    public static VideoStatus get(int from) {<a name="line.194"></a>
+<FONT color="green">195</FONT>                            switch (from) {<a name="line.195"></a>
+<FONT color="green">196</FONT>                            case 0: return VIDEO_UNKNOWN;<a name="line.196"></a>
+<FONT color="green">197</FONT>                            case 1: return VIDEO_NA;<a name="line.197"></a>
+<FONT color="green">198</FONT>                            case 2: return VIDEO_AVAILABLE;<a name="line.198"></a>
+<FONT color="green">199</FONT>                            case 3: return VIDEO_CONNECTING;<a name="line.199"></a>
+<FONT color="green">200</FONT>                            case 4: return STREAMING;<a name="line.200"></a>
+<FONT color="green">201</FONT>                            case 5: return VIDEO_ON_HOLD;<a name="line.201"></a>
+<FONT color="green">202</FONT>                            }<a name="line.202"></a>
+<FONT color="green">203</FONT>                            return VIDEO_UNKNOWN;<a name="line.203"></a>
+<FONT color="green">204</FONT>                    }<a name="line.204"></a>
+<FONT color="green">205</FONT>                    public static final int VIDEO_UNKNOWN_VALUE    = 0;<a name="line.205"></a>
+<FONT color="green">206</FONT>                    public static final int VIDEO_NA_VALUE         = 1;<a name="line.206"></a>
+<FONT color="green">207</FONT>                    public static final int VIDEO_AVAILABLE_VALUE  = 2;<a name="line.207"></a>
+<FONT color="green">208</FONT>                    public static final int VIDEO_CONNECTING_VALUE = 3;<a name="line.208"></a>
+<FONT color="green">209</FONT>                    public static final int STREAMING_VALUE        = 4;<a name="line.209"></a>
+<FONT color="green">210</FONT>                    public static final int VIDEO_ON_HOLD_VALUE    = 5;<a name="line.210"></a>
+<FONT color="green">211</FONT>            }<a name="line.211"></a>
+<FONT color="green">212</FONT>            public enum Dtmf implements EnumConverting {<a name="line.212"></a>
+<FONT color="green">213</FONT>                    DTMF_0    (0),<a name="line.213"></a>
+<FONT color="green">214</FONT>                    DTMF_1    (1),<a name="line.214"></a>
+<FONT color="green">215</FONT>                    DTMF_2    (2),<a name="line.215"></a>
+<FONT color="green">216</FONT>                    DTMF_3    (3),<a name="line.216"></a>
+<FONT color="green">217</FONT>                    DTMF_4    (4),<a name="line.217"></a>
+<FONT color="green">218</FONT>                    DTMF_5    (5),<a name="line.218"></a>
+<FONT color="green">219</FONT>                    DTMF_6    (6),<a name="line.219"></a>
+<FONT color="green">220</FONT>                    DTMF_7    (7),<a name="line.220"></a>
+<FONT color="green">221</FONT>                    DTMF_8    (8),<a name="line.221"></a>
+<FONT color="green">222</FONT>                    DTMF_9    (9),<a name="line.222"></a>
+<FONT color="green">223</FONT>                    DTMF_STAR (10),<a name="line.223"></a>
+<FONT color="green">224</FONT>                    DTMF_POUND(11);<a name="line.224"></a>
+<FONT color="green">225</FONT>                    private final int key;<a name="line.225"></a>
+<FONT color="green">226</FONT>                    Dtmf(int key) {<a name="line.226"></a>
+<FONT color="green">227</FONT>                            this.key = key;<a name="line.227"></a>
+<FONT color="green">228</FONT>                    };<a name="line.228"></a>
+<FONT color="green">229</FONT>                    public int getId()   { return key; }<a name="line.229"></a>
+<FONT color="green">230</FONT>                    public EnumConverting getDefault() { return DTMF_0; }<a name="line.230"></a>
+<FONT color="green">231</FONT>                    public EnumConverting convert(int from) { return Dtmf.get(from); }<a name="line.231"></a>
+<FONT color="green">232</FONT>                    public EnumConverting[] getArray(final int size) { return new Dtmf[size]; }<a name="line.232"></a>
+<FONT color="green">233</FONT>                    public static Dtmf get(int from) {<a name="line.233"></a>
+<FONT color="green">234</FONT>                            switch (from) {<a name="line.234"></a>
+<FONT color="green">235</FONT>                            case  0: return DTMF_0;<a name="line.235"></a>
+<FONT color="green">236</FONT>                            case  1: return DTMF_1;<a name="line.236"></a>
+<FONT color="green">237</FONT>                            case  2: return DTMF_2;<a name="line.237"></a>
+<FONT color="green">238</FONT>                            case  3: return DTMF_3;<a name="line.238"></a>
+<FONT color="green">239</FONT>                            case  4: return DTMF_4;<a name="line.239"></a>
+<FONT color="green">240</FONT>                            case  5: return DTMF_5;<a name="line.240"></a>
+<FONT color="green">241</FONT>                            case  6: return DTMF_6;<a name="line.241"></a>
+<FONT color="green">242</FONT>                            case  7: return DTMF_7;<a name="line.242"></a>
+<FONT color="green">243</FONT>                            case  8: return DTMF_8;<a name="line.243"></a>
+<FONT color="green">244</FONT>                            case  9: return DTMF_9;<a name="line.244"></a>
+<FONT color="green">245</FONT>                            case 10: return DTMF_STAR;<a name="line.245"></a>
+<FONT color="green">246</FONT>                            case 11: return DTMF_POUND;<a name="line.246"></a>
+<FONT color="green">247</FONT>                            }<a name="line.247"></a>
+<FONT color="green">248</FONT>                            return DTMF_0;<a name="line.248"></a>
+<FONT color="green">249</FONT>                    }<a name="line.249"></a>
+<FONT color="green">250</FONT>                    public static final int DTMF_0_VALUE     =  0;<a name="line.250"></a>
+<FONT color="green">251</FONT>                    public static final int DTMF_1_VALUE     =  1;<a name="line.251"></a>
+<FONT color="green">252</FONT>                    public static final int DTMF_2_VALUE     =  2;<a name="line.252"></a>
+<FONT color="green">253</FONT>                    public static final int DTMF_3_VALUE     =  3;<a name="line.253"></a>
+<FONT color="green">254</FONT>                    public static final int DTMF_4_VALUE     =  4;<a name="line.254"></a>
+<FONT color="green">255</FONT>                    public static final int DTMF_5_VALUE     =  5;<a name="line.255"></a>
+<FONT color="green">256</FONT>                    public static final int DTMF_6_VALUE     =  6;<a name="line.256"></a>
+<FONT color="green">257</FONT>                    public static final int DTMF_7_VALUE     =  7;<a name="line.257"></a>
+<FONT color="green">258</FONT>                    public static final int DTMF_8_VALUE     =  8;<a name="line.258"></a>
+<FONT color="green">259</FONT>                    public static final int DTMF_9_VALUE     =  9;<a name="line.259"></a>
+<FONT color="green">260</FONT>                    public static final int DTMF_STAR_VALUE  = 10;<a name="line.260"></a>
+<FONT color="green">261</FONT>                    public static final int DTMF_POUND_VALUE = 11;<a name="line.261"></a>
+<FONT color="green">262</FONT>            }<a name="line.262"></a>
+<FONT color="green">263</FONT>            private final static byte[] P_CONVERSATION_req = {(byte) 90,(byte) 71,(byte) 162,(byte) 7,(byte) 93,(byte) 19};<a name="line.263"></a>
+<FONT color="green">264</FONT>            private final static byte[] P_IDENTITY_req = {(byte) 90,(byte) 71,(byte) 163,(byte) 7,(byte) 93,(byte) 19};<a name="line.264"></a>
+<FONT color="green">265</FONT>            private final static byte[] P_RANK_req = {(byte) 90,(byte) 71,(byte) 164,(byte) 7,(byte) 93,(byte) 19};<a name="line.265"></a>
+<FONT color="green">266</FONT>            private final static byte[] P_REQUESTED_RANK_req = {(byte) 90,(byte) 71,(byte) 165,(byte) 7,(byte) 93,(byte) 19};<a name="line.266"></a>
+<FONT color="green">267</FONT>            private final static byte[] P_TEXT_STATUS_req = {(byte) 90,(byte) 71,(byte) 166,(byte) 7,(byte) 93,(byte) 19};<a name="line.267"></a>
+<FONT color="green">268</FONT>            private final static byte[] P_VOICE_STATUS_req = {(byte) 90,(byte) 71,(byte) 167,(byte) 7,(byte) 93,(byte) 19};<a name="line.268"></a>
+<FONT color="green">269</FONT>            private final static byte[] P_VIDEO_STATUS_req = {(byte) 90,(byte) 71,(byte) 168,(byte) 7,(byte) 93,(byte) 19};<a name="line.269"></a>
+<FONT color="green">270</FONT>            private final static byte[] P_LIVE_IDENTITY_req = {(byte) 90,(byte) 71,(byte) 175,(byte) 7,(byte) 93,(byte) 19};<a name="line.270"></a>
+<FONT color="green">271</FONT>            private final static byte[] P_LIVE_PRICE_FOR_ME_req = {(byte) 90,(byte) 71,(byte) 170,(byte) 7,(byte) 93,(byte) 19};<a name="line.271"></a>
+<FONT color="green">272</FONT>            private final static byte[] P_LIVE_FWD_IDENTITIES_req = {(byte) 90,(byte) 71,(byte) 180,(byte) 7,(byte) 93,(byte) 19};<a name="line.272"></a>
+<FONT color="green">273</FONT>            private final static byte[] P_LIVE_START_TIMESTAMP_req = {(byte) 90,(byte) 71,(byte) 171,(byte) 7,(byte) 93,(byte) 19};<a name="line.273"></a>
+<FONT color="green">274</FONT>            private final static byte[] P_SOUND_LEVEL_req = {(byte) 90,(byte) 71,(byte) 173,(byte) 7,(byte) 93,(byte) 19};<a name="line.274"></a>
+<FONT color="green">275</FONT>            private final static byte[] P_DEBUG_INFO_req = {(byte) 90,(byte) 71,(byte) 174,(byte) 7,(byte) 93,(byte) 19};<a name="line.275"></a>
+<FONT color="green">276</FONT>            private final static byte[] P_LAST_VOICE_ERROR_req = {(byte) 90,(byte) 71,(byte) 179,(byte) 7,(byte) 93,(byte) 19};<a name="line.276"></a>
+<FONT color="green">277</FONT>            private final static byte[] P_QUALITY_PROBLEMS_req = {(byte) 90,(byte) 71,(byte) 181,(byte) 7,(byte) 93,(byte) 19};<a name="line.277"></a>
+<FONT color="green">278</FONT>            private final static byte[] P_LIVE_TYPE_req = {(byte) 90,(byte) 71,(byte) 182,(byte) 7,(byte) 93,(byte) 19};<a name="line.278"></a>
+<FONT color="green">279</FONT>            private final static byte[] P_LIVE_COUNTRY_req = {(byte) 90,(byte) 71,(byte) 183,(byte) 7,(byte) 93,(byte) 19};<a name="line.279"></a>
+<FONT color="green">280</FONT>            private final static byte[] P_TRANSFERRED_BY_req = {(byte) 90,(byte) 71,(byte) 184,(byte) 7,(byte) 93,(byte) 19};<a name="line.280"></a>
+<FONT color="green">281</FONT>            private final static byte[] P_TRANSFERRED_TO_req = {(byte) 90,(byte) 71,(byte) 185,(byte) 7,(byte) 93,(byte) 19};<a name="line.281"></a>
+<FONT color="green">282</FONT>            private final static byte[] P_ADDER_req = {(byte) 90,(byte) 71,(byte) 186,(byte) 7,(byte) 93,(byte) 19};<a name="line.282"></a>
+<FONT color="green">283</FONT>            private final static byte[] P_LAST_LEAVEREASON_req = {(byte) 90,(byte) 71,(byte) 187,(byte) 7,(byte) 93,(byte) 19};<a name="line.283"></a>
+<FONT color="green">284</FONT>            /** Properties of the Participant class */<a name="line.284"></a>
+<FONT color="green">285</FONT>            public enum Property implements PropertyEnumConverting {<a name="line.285"></a>
+<FONT color="green">286</FONT>                    P_UNKNOWN             (0,0,null,0,null),<a name="line.286"></a>
+<FONT color="green">287</FONT>                    P_CONVERSATION        (930, 1, P_CONVERSATION_req, 18, null),<a name="line.287"></a>
+<FONT color="green">288</FONT>                    P_IDENTITY            (931, 2, P_IDENTITY_req, 0, null),<a name="line.288"></a>
+<FONT color="green">289</FONT>                    P_RANK                (932, 3, P_RANK_req, 0, Rank.get(0)),<a name="line.289"></a>
+<FONT color="green">290</FONT>                    P_REQUESTED_RANK      (933, 4, P_REQUESTED_RANK_req, 0, Rank.get(0)),<a name="line.290"></a>
+<FONT color="green">291</FONT>                    P_TEXT_STATUS         (934, 5, P_TEXT_STATUS_req, 0, TextStatus.get(0)),<a name="line.291"></a>
+<FONT color="green">292</FONT>                    P_VOICE_STATUS        (935, 6, P_VOICE_STATUS_req, 0, VoiceStatus.get(0)),<a name="line.292"></a>
+<FONT color="green">293</FONT>                    P_VIDEO_STATUS        (936, 7, P_VIDEO_STATUS_req, 0, VideoStatus.get(0)),<a name="line.293"></a>
+<FONT color="green">294</FONT>                    P_LIVE_IDENTITY       (943, 8, P_LIVE_IDENTITY_req, 0, null),<a name="line.294"></a>
+<FONT color="green">295</FONT>                    P_LIVE_PRICE_FOR_ME   (938, 9, P_LIVE_PRICE_FOR_ME_req, 0, null),<a name="line.295"></a>
+<FONT color="green">296</FONT>                    P_LIVE_FWD_IDENTITIES (948, 10, P_LIVE_FWD_IDENTITIES_req, 0, null),<a name="line.296"></a>
+<FONT color="green">297</FONT>                    P_LIVE_START_TIMESTAMP(939, 11, P_LIVE_START_TIMESTAMP_req, 0, null),<a name="line.297"></a>
+<FONT color="green">298</FONT>                    P_SOUND_LEVEL         (941, 12, P_SOUND_LEVEL_req, 0, null),<a name="line.298"></a>
+<FONT color="green">299</FONT>                    P_DEBUG_INFO          (942, 13, P_DEBUG_INFO_req, 0, null),<a name="line.299"></a>
+<FONT color="green">300</FONT>                    P_LAST_VOICE_ERROR    (947, 14, P_LAST_VOICE_ERROR_req, 0, null),<a name="line.300"></a>
+<FONT color="green">301</FONT>                    P_QUALITY_PROBLEMS    (949, 15, P_QUALITY_PROBLEMS_req, 0, null),<a name="line.301"></a>
+<FONT color="green">302</FONT>                    P_LIVE_TYPE           (950, 16, P_LIVE_TYPE_req, 0, Skype.IdentityType.get(0)),<a name="line.302"></a>
+<FONT color="green">303</FONT>                    P_LIVE_COUNTRY        (951, 17, P_LIVE_COUNTRY_req, 0, null),<a name="line.303"></a>
+<FONT color="green">304</FONT>                    P_TRANSFERRED_BY      (952, 18, P_TRANSFERRED_BY_req, 0, null),<a name="line.304"></a>
+<FONT color="green">305</FONT>                    P_TRANSFERRED_TO      (953, 19, P_TRANSFERRED_TO_req, 0, null),<a name="line.305"></a>
+<FONT color="green">306</FONT>                    P_ADDER               (954, 20, P_ADDER_req, 0, null),<a name="line.306"></a>
+<FONT color="green">307</FONT>                    P_LAST_LEAVEREASON    (955, 21, P_LAST_LEAVEREASON_req, 0, Skype.LeaveReason.get(0));<a name="line.307"></a>
+<FONT color="green">308</FONT>                    private final int    key;<a name="line.308"></a>
+<FONT color="green">309</FONT>                    private final int    idx;<a name="line.309"></a>
+<FONT color="green">310</FONT>                    private final byte[] req;<a name="line.310"></a>
+<FONT color="green">311</FONT>                    private final int    mod;<a name="line.311"></a>
+<FONT color="green">312</FONT>                    private final EnumConverting enumConverter;<a name="line.312"></a>
+<FONT color="green">313</FONT>                    Property(int key, int idx, byte[] req, int mod, EnumConverting converter) {<a name="line.313"></a>
+<FONT color="green">314</FONT>                            this.key = key;<a name="line.314"></a>
+<FONT color="green">315</FONT>                            this.idx = idx;<a name="line.315"></a>
+<FONT color="green">316</FONT>                            this.req = req;<a name="line.316"></a>
+<FONT color="green">317</FONT>                            this.mod = mod;<a name="line.317"></a>
+<FONT color="green">318</FONT>                            this.enumConverter = converter;<a name="line.318"></a>
+<FONT color="green">319</FONT>                    };<a name="line.319"></a>
+<FONT color="green">320</FONT>                    public boolean  isCached()    { return idx &gt; 0;   }<a name="line.320"></a>
+<FONT color="green">321</FONT>                    public int      getIdx()      { return idx;       }<a name="line.321"></a>
+<FONT color="green">322</FONT>                    public int      getId()       { return key;       }<a name="line.322"></a>
+<FONT color="green">323</FONT>                    public byte[]   getRequest()  { return req;       }<a name="line.323"></a>
+<FONT color="green">324</FONT>                    public EnumConverting getDefault()  { return P_UNKNOWN; }<a name="line.324"></a>
+<FONT color="green">325</FONT>                    public int      getModuleId() { return mod;       }<a name="line.325"></a>
+<FONT color="green">326</FONT>                    public EnumConverting getEnumConverter()    { return enumConverter;   }<a name="line.326"></a>
+<FONT color="green">327</FONT>                    public EnumConverting convert(final int from) { return Property.get(from); }<a name="line.327"></a>
+<FONT color="green">328</FONT>                    public EnumConverting[] getArray(final int size) { return new Property[size]; }<a name="line.328"></a>
+<FONT color="green">329</FONT>                    public static Property get(final int from) {<a name="line.329"></a>
+<FONT color="green">330</FONT>                            switch (from) {<a name="line.330"></a>
+<FONT color="green">331</FONT>                            case 930: return P_CONVERSATION;<a name="line.331"></a>
+<FONT color="green">332</FONT>                            case 931: return P_IDENTITY;<a name="line.332"></a>
+<FONT color="green">333</FONT>                            case 932: return P_RANK;<a name="line.333"></a>
+<FONT color="green">334</FONT>                            case 933: return P_REQUESTED_RANK;<a name="line.334"></a>
+<FONT color="green">335</FONT>                            case 934: return P_TEXT_STATUS;<a name="line.335"></a>
+<FONT color="green">336</FONT>                            case 935: return P_VOICE_STATUS;<a name="line.336"></a>
+<FONT color="green">337</FONT>                            case 936: return P_VIDEO_STATUS;<a name="line.337"></a>
+<FONT color="green">338</FONT>                            case 943: return P_LIVE_IDENTITY;<a name="line.338"></a>
+<FONT color="green">339</FONT>                            case 938: return P_LIVE_PRICE_FOR_ME;<a name="line.339"></a>
+<FONT color="green">340</FONT>                            case 948: return P_LIVE_FWD_IDENTITIES;<a name="line.340"></a>
+<FONT color="green">341</FONT>                            case 939: return P_LIVE_START_TIMESTAMP;                        case 941: return P_SOUND_LEVEL;<a name="line.341"></a>
+<FONT color="green">342</FONT>                            case 942: return P_DEBUG_INFO;<a name="line.342"></a>
+<FONT color="green">343</FONT>                            case 947: return P_LAST_VOICE_ERROR;<a name="line.343"></a>
+<FONT color="green">344</FONT>                            case 949: return P_QUALITY_PROBLEMS;<a name="line.344"></a>
+<FONT color="green">345</FONT>                            case 950: return P_LIVE_TYPE;<a name="line.345"></a>
+<FONT color="green">346</FONT>                            case 951: return P_LIVE_COUNTRY;<a name="line.346"></a>
+<FONT color="green">347</FONT>                            case 952: return P_TRANSFERRED_BY;<a name="line.347"></a>
+<FONT color="green">348</FONT>                            case 953: return P_TRANSFERRED_TO;<a name="line.348"></a>
+<FONT color="green">349</FONT>                            case 954: return P_ADDER;<a name="line.349"></a>
+<FONT color="green">350</FONT>                            case 955: return P_LAST_LEAVEREASON;<a name="line.350"></a>
+<FONT color="green">351</FONT>                            }<a name="line.351"></a>
+<FONT color="green">352</FONT>                            return P_UNKNOWN;<a name="line.352"></a>
+<FONT color="green">353</FONT>                    }<a name="line.353"></a>
+<FONT color="green">354</FONT>                    public static final int P_CONVERSATION_VALUE         = 930;<a name="line.354"></a>
+<FONT color="green">355</FONT>                    public static final int P_IDENTITY_VALUE             = 931;<a name="line.355"></a>
+<FONT color="green">356</FONT>                    public static final int P_RANK_VALUE                 = 932;<a name="line.356"></a>
+<FONT color="green">357</FONT>                    public static final int P_REQUESTED_RANK_VALUE       = 933;<a name="line.357"></a>
+<FONT color="green">358</FONT>                    public static final int P_TEXT_STATUS_VALUE          = 934;<a name="line.358"></a>
+<FONT color="green">359</FONT>                    public static final int P_VOICE_STATUS_VALUE         = 935;<a name="line.359"></a>
+<FONT color="green">360</FONT>                    public static final int P_VIDEO_STATUS_VALUE         = 936;<a name="line.360"></a>
+<FONT color="green">361</FONT>                    public static final int P_LIVE_IDENTITY_VALUE        = 943;<a name="line.361"></a>
+<FONT color="green">362</FONT>                    public static final int P_LIVE_PRICE_FOR_ME_VALUE    = 938;<a name="line.362"></a>
+<FONT color="green">363</FONT>                    public static final int P_LIVE_FWD_IDENTITIES_VALUE  = 948;<a name="line.363"></a>
+<FONT color="green">364</FONT>                    public static final int P_LIVE_START_TIMESTAMP_VALUE = 939;<a name="line.364"></a>
+<FONT color="green">365</FONT>                    public static final int P_SOUND_LEVEL_VALUE          = 941;<a name="line.365"></a>
+<FONT color="green">366</FONT>                    public static final int P_DEBUG_INFO_VALUE           = 942;<a name="line.366"></a>
+<FONT color="green">367</FONT>                    public static final int P_LAST_VOICE_ERROR_VALUE     = 947;<a name="line.367"></a>
+<FONT color="green">368</FONT>                    public static final int P_QUALITY_PROBLEMS_VALUE     = 949;<a name="line.368"></a>
+<FONT color="green">369</FONT>                    public static final int P_LIVE_TYPE_VALUE            = 950;<a name="line.369"></a>
+<FONT color="green">370</FONT>                    public static final int P_LIVE_COUNTRY_VALUE         = 951;<a name="line.370"></a>
+<FONT color="green">371</FONT>                    public static final int P_TRANSFERRED_BY_VALUE       = 952;<a name="line.371"></a>
+<FONT color="green">372</FONT>                    public static final int P_TRANSFERRED_TO_VALUE       = 953;<a name="line.372"></a>
+<FONT color="green">373</FONT>                    public static final int P_ADDER_VALUE                = 954;<a name="line.373"></a>
+<FONT color="green">374</FONT>                    public static final int P_LAST_LEAVEREASON_VALUE     = 955;<a name="line.374"></a>
+<FONT color="green">375</FONT>                    public static final Property[] mget_info_mreq = { P_VOICE_STATUS, P_TEXT_STATUS, P_VIDEO_STATUS, P_RANK, P_LIVE_TYPE, P_LIVE_PRICE_FOR_ME, P_IDENTITY };<a name="line.375"></a>
+<FONT color="green">376</FONT>            }<a name="line.376"></a>
+<FONT color="green">377</FONT>            private final static byte[] canSetRankTo_req = {(byte) 90,(byte) 82,(byte) 19,(byte) 1};<a name="line.377"></a>
+<FONT color="green">378</FONT>            /** Checks whether the current user can set this Participant's conversation privileges to the specified RANK. This enables you to gray out or disable in your UI all the unavailable options for Participant.SetRankTo method. <a name="line.378"></a>
+<FONT color="green">379</FONT>             * @param rank Participant.RANK value to check for. <a name="line.379"></a>
+<FONT color="green">380</FONT>             * @return result Returns true if local user can set participant's rank to the value given in rank argument. <a name="line.380"></a>
+<FONT color="green">381</FONT>             */<a name="line.381"></a>
+<FONT color="green">382</FONT>            public boolean canSetRankTo(Rank rank) {<a name="line.382"></a>
+<FONT color="green">383</FONT>                    try {<a name="line.383"></a>
+<FONT color="green">384</FONT>                            return sidDoRequest(canSetRankTo_req)<a name="line.384"></a>
+<FONT color="green">385</FONT>                            .addEnumParm(1, rank)<a name="line.385"></a>
+<FONT color="green">386</FONT>                            .endRequest().getBoolParm(1, true);<a name="line.386"></a>
+<FONT color="green">387</FONT>                    } catch(IOException e) {<a name="line.387"></a>
+<FONT color="green">388</FONT>                            mSidRoot.sidOnFatalError(e);<a name="line.388"></a>
+<FONT color="green">389</FONT>                            return false;<a name="line.389"></a>
+<FONT color="green">390</FONT>                    }<a name="line.390"></a>
+<FONT color="green">391</FONT>            }<a name="line.391"></a>
+<FONT color="green">392</FONT>            private final static byte[] setRankTo_req = {(byte) 90,(byte) 82,(byte) 19,(byte) 2};<a name="line.392"></a>
+<FONT color="green">393</FONT>            /** Sets Participant's conversation privileges to the given RANK <a name="line.393"></a>
+<FONT color="green">394</FONT>             * @param rank Target Participant.RANK value. <a name="line.394"></a>
+<FONT color="green">395</FONT>             */<a name="line.395"></a>
+<FONT color="green">396</FONT>            public void setRankTo(Rank rank) {<a name="line.396"></a>
+<FONT color="green">397</FONT>                    try {<a name="line.397"></a>
+<FONT color="green">398</FONT>                            sidDoRequest(setRankTo_req)<a name="line.398"></a>
+<FONT color="green">399</FONT>                            .addEnumParm(1, rank)<a name="line.399"></a>
+<FONT color="green">400</FONT>                            .endOneWay();<a name="line.400"></a>
+<FONT color="green">401</FONT>                    } catch(IOException e) {<a name="line.401"></a>
+<FONT color="green">402</FONT>                            mSidRoot.sidOnFatalError(e);<a name="line.402"></a>
+<FONT color="green">403</FONT>                    }<a name="line.403"></a>
+<FONT color="green">404</FONT>            }<a name="line.404"></a>
+<FONT color="green">405</FONT>            private final static byte[] ring_req = {(byte) 90,(byte) 82,(byte) 19,(byte) 3};<a name="line.405"></a>
+<FONT color="green">406</FONT>            /** Initiates live conversation attempt with Participant. <a name="line.406"></a>
+<FONT color="green">407</FONT>             * @param identityToUse Ring an alternate identity, such as a PSTN number. <a name="line.407"></a>
+<FONT color="green">408</FONT>             * @param videoCall Enable video. <a name="line.408"></a>
+<FONT color="green">409</FONT>             * @param nrofRedials Unused. <a name="line.409"></a>
+<FONT color="green">410</FONT>             * @param redialPeriod Unused. <a name="line.410"></a>
+<FONT color="green">411</FONT>             * @param autoStartVm Unused. On dialog, if falling on VM, greeting and recording will be automatically started. <a name="line.411"></a>
+<FONT color="green">412</FONT>             * @param origin When call is initiated from web link, must contain the URI that was used<a name="line.412"></a>
+<FONT color="green">413</FONT>             */<a name="line.413"></a>
+<FONT color="green">414</FONT>            public void ring(String identityToUse, boolean videoCall, int nrofRedials, int redialPeriod, boolean autoStartVm, String origin) {<a name="line.414"></a>
+<FONT color="green">415</FONT>                    try {<a name="line.415"></a>
+<FONT color="green">416</FONT>                            sidDoRequest(ring_req)<a name="line.416"></a>
+<FONT color="green">417</FONT>                            .addStringParm(1, identityToUse)<a name="line.417"></a>
+<FONT color="green">418</FONT>                            .addBoolParm(2, videoCall)<a name="line.418"></a>
+<FONT color="green">419</FONT>                            .addUintParm(3, nrofRedials)<a name="line.419"></a>
+<FONT color="green">420</FONT>                            .addUintParm(4, redialPeriod)<a name="line.420"></a>
+<FONT color="green">421</FONT>                            .addBoolParm(5, autoStartVm)<a name="line.421"></a>
+<FONT color="green">422</FONT>                            .addStringParm(6, origin)<a name="line.422"></a>
+<FONT color="green">423</FONT>                            .endOneWay();<a name="line.423"></a>
+<FONT color="green">424</FONT>                    } catch(IOException e) {<a name="line.424"></a>
+<FONT color="green">425</FONT>                            mSidRoot.sidOnFatalError(e);<a name="line.425"></a>
+<FONT color="green">426</FONT>                    }<a name="line.426"></a>
+<FONT color="green">427</FONT>            }<a name="line.427"></a>
+<FONT color="green">428</FONT>            private final static byte[] ringIt_req = {(byte) 90,(byte) 82,(byte) 19,(byte) 8};<a name="line.428"></a>
+<FONT color="green">429</FONT>            /** Rings this participant, using P_LIVE_IDENTITY property if set. <a name="line.429"></a>
+<FONT color="green">430</FONT>             */<a name="line.430"></a>
+<FONT color="green">431</FONT>            public void ringIt() {<a name="line.431"></a>
+<FONT color="green">432</FONT>                    try {<a name="line.432"></a>
+<FONT color="green">433</FONT>                            sidDoRequest(ringIt_req)<a name="line.433"></a>
+<FONT color="green">434</FONT>                            .endOneWay();<a name="line.434"></a>
+<FONT color="green">435</FONT>                    } catch(IOException e) {<a name="line.435"></a>
+<FONT color="green">436</FONT>                            mSidRoot.sidOnFatalError(e);<a name="line.436"></a>
+<FONT color="green">437</FONT>                    }<a name="line.437"></a>
+<FONT color="green">438</FONT>            }<a name="line.438"></a>
+<FONT color="green">439</FONT>            private final static byte[] setLiveIdentityToUse_req = {(byte) 90,(byte) 82,(byte) 19,(byte) 7};<a name="line.439"></a>
+<FONT color="green">440</FONT>            /** Sets LIVE_IDENTITY property, an alternate identity to use when ringing, such as a PSTN. <a name="line.440"></a>
+<FONT color="green">441</FONT>             * @param identityToUse Empty string will reset it to default, i.e IDENTITY property value <a name="line.441"></a>
+<FONT color="green">442</FONT>             */<a name="line.442"></a>
+<FONT color="green">443</FONT>            public void setLiveIdentityToUse(String identityToUse) {<a name="line.443"></a>
+<FONT color="green">444</FONT>                    try {<a name="line.444"></a>
+<FONT color="green">445</FONT>                            sidDoRequest(setLiveIdentityToUse_req)<a name="line.445"></a>
+<FONT color="green">446</FONT>                            .addStringParm(1, identityToUse)<a name="line.446"></a>
+<FONT color="green">447</FONT>                            .endOneWay();<a name="line.447"></a>
+<FONT color="green">448</FONT>                    } catch(IOException e) {<a name="line.448"></a>
+<FONT color="green">449</FONT>                            mSidRoot.sidOnFatalError(e);<a name="line.449"></a>
+<FONT color="green">450</FONT>                    }<a name="line.450"></a>
+<FONT color="green">451</FONT>            }<a name="line.451"></a>
+<FONT color="green">452</FONT>            private final static byte[] getVideo_req = {(byte) 90,(byte) 82,(byte) 19,(byte) 4};<a name="line.452"></a>
+<FONT color="green">453</FONT>            /**<a name="line.453"></a>
+<FONT color="green">454</FONT>             * Retrieves a reference to the Video object that corresponds to the Participant. It can be either local video - you can check if this participant's name (P_IDENTITY property) matches the name of the currently logged in account (P_SKYPENAME property) or incoming video from a remote participant.  <a name="line.454"></a>
+<FONT color="green">455</FONT>             * <a name="line.455"></a>
+<FONT color="green">456</FONT>             * Note that for GetVideo to be successful, the video has to be available for that participant. This can be checked for by examining Participant VIDEO_STATUS property - once it becomes VIDEO_AVAILABLE - you can use GetVideo to obtain the Video object. <a name="line.456"></a>
+<FONT color="green">457</FONT>            <a name="line.457"></a>
+<FONT color="green">458</FONT>             * @return video Returns reference to a constructed video object. <a name="line.458"></a>
+<FONT color="green">459</FONT>             */<a name="line.459"></a>
+<FONT color="green">460</FONT>            public Video getVideo() {<a name="line.460"></a>
+<FONT color="green">461</FONT>                    try {<a name="line.461"></a>
+<FONT color="green">462</FONT>                            return (Video) sidDoRequest(getVideo_req)<a name="line.462"></a>
+<FONT color="green">463</FONT>                            .endRequest().getObjectParm(1, 11, true);<a name="line.463"></a>
+<FONT color="green">464</FONT>                    } catch(IOException e) {<a name="line.464"></a>
+<FONT color="green">465</FONT>                            mSidRoot.sidOnFatalError(e);<a name="line.465"></a>
+<FONT color="green">466</FONT>                            return null;<a name="line.466"></a>
+<FONT color="green">467</FONT>                    }<a name="line.467"></a>
+<FONT color="green">468</FONT>            }<a name="line.468"></a>
+<FONT color="green">469</FONT>            private final static byte[] hangup_req = {(byte) 90,(byte) 82,(byte) 19,(byte) 5};<a name="line.469"></a>
+<FONT color="green">470</FONT>            /** Removes this participant from the current live session. Note that this does not remove the participant from conversation (for this, use Participant.Retire). It only removes participant from live state. <a name="line.470"></a>
+<FONT color="green">471</FONT>             */<a name="line.471"></a>
+<FONT color="green">472</FONT>            public void hangup() {<a name="line.472"></a>
+<FONT color="green">473</FONT>                    try {<a name="line.473"></a>
+<FONT color="green">474</FONT>                            sidDoRequest(hangup_req)<a name="line.474"></a>
+<FONT color="green">475</FONT>                            .endOneWay();<a name="line.475"></a>
+<FONT color="green">476</FONT>                    } catch(IOException e) {<a name="line.476"></a>
+<FONT color="green">477</FONT>                            mSidRoot.sidOnFatalError(e);<a name="line.477"></a>
+<FONT color="green">478</FONT>                    }<a name="line.478"></a>
+<FONT color="green">479</FONT>            }<a name="line.479"></a>
+<FONT color="green">480</FONT>            private final static byte[] retire_req = {(byte) 90,(byte) 82,(byte) 19,(byte) 6};<a name="line.480"></a>
+<FONT color="green">481</FONT>            /** Forcibly removes this participant from conversation. This method is for removing other people from conversations (for example: as administrative punishment for flooding conversation with spam messages). For local user to leave a conversation, use Conversation.RetireFrom instead. <a name="line.481"></a>
+<FONT color="green">482</FONT>             */<a name="line.482"></a>
+<FONT color="green">483</FONT>            public void retire() {<a name="line.483"></a>
+<FONT color="green">484</FONT>                    try {<a name="line.484"></a>
+<FONT color="green">485</FONT>                            sidDoRequest(retire_req)<a name="line.485"></a>
+<FONT color="green">486</FONT>                            .endOneWay();<a name="line.486"></a>
+<FONT color="green">487</FONT>                    } catch(IOException e) {<a name="line.487"></a>
+<FONT color="green">488</FONT>                            mSidRoot.sidOnFatalError(e);<a name="line.488"></a>
+<FONT color="green">489</FONT>                    }<a name="line.489"></a>
+<FONT color="green">490</FONT>            }<a name="line.490"></a>
+<FONT color="green">491</FONT>            private final static byte[] getLiveSessionVideos_req = {(byte) 90,(byte) 82,(byte) 19,(byte) 145,(byte) 1};<a name="line.491"></a>
+<FONT color="green">492</FONT>            /** For myself participant returns a list of attached send videos. For non-myself - list of recv videos.<a name="line.492"></a>
+<FONT color="green">493</FONT>             * @return videos<a name="line.493"></a>
+<FONT color="green">494</FONT>             */<a name="line.494"></a>
+<FONT color="green">495</FONT>            public Video[] getLiveSessionVideos() {<a name="line.495"></a>
+<FONT color="green">496</FONT>                    try {<a name="line.496"></a>
+<FONT color="green">497</FONT>                            return (Video[]) sidDoRequest(getLiveSessionVideos_req)<a name="line.497"></a>
+<FONT color="green">498</FONT>                            .endRequest().getObjectListParm(1, 11, true);<a name="line.498"></a>
+<FONT color="green">499</FONT>                    } catch(IOException e) {<a name="line.499"></a>
+<FONT color="green">500</FONT>                            mSidRoot.sidOnFatalError(e);<a name="line.500"></a>
+<FONT color="green">501</FONT>                            return null;<a name="line.501"></a>
+<FONT color="green">502</FONT>                    }<a name="line.502"></a>
+<FONT color="green">503</FONT>            }<a name="line.503"></a>
+<FONT color="green">504</FONT>            /***<a name="line.504"></a>
+<FONT color="green">505</FONT>             * generic multiget of a list of Property<a name="line.505"></a>
+<FONT color="green">506</FONT>             * @param requested the list of requested properties of Participant<a name="line.506"></a>
+<FONT color="green">507</FONT>             * @return SidGetResponding<a name="line.507"></a>
+<FONT color="green">508</FONT>             */<a name="line.508"></a>
+<FONT color="green">509</FONT>            public SidGetResponding sidMultiGet(Property[] requested) {<a name="line.509"></a>
+<FONT color="green">510</FONT>                    return super.sidMultiGet(requested);<a name="line.510"></a>
+<FONT color="green">511</FONT>            }<a name="line.511"></a>
+<FONT color="green">512</FONT>            /***<a name="line.512"></a>
+<FONT color="green">513</FONT>             * generic multiget of list of Property for a list of Participant<a name="line.513"></a>
+<FONT color="green">514</FONT>             * @param requested the list of requested properties<a name="line.514"></a>
+<FONT color="green">515</FONT>             * @return SidGetResponding[] can be casted to (Participant[]) if all properties are cached<a name="line.515"></a>
+<FONT color="green">516</FONT>             */<a name="line.516"></a>
+<FONT color="green">517</FONT>            static public SidGetResponding[] sidMultiGet(Property[] requested, Participant[] objects) {<a name="line.517"></a>
+<FONT color="green">518</FONT>                    return SidObject.sidMultiGet(requested, objects);<a name="line.518"></a>
+<FONT color="green">519</FONT>            }<a name="line.519"></a>
+<FONT color="green">520</FONT>            /*** multiget the following properties<a name="line.520"></a>
+<FONT color="green">521</FONT>             * - P_VOICE_STATUS<a name="line.521"></a>
+<FONT color="green">522</FONT>             * - P_TEXT_STATUS<a name="line.522"></a>
+<FONT color="green">523</FONT>             * - P_VIDEO_STATUS<a name="line.523"></a>
+<FONT color="green">524</FONT>             * - P_RANK<a name="line.524"></a>
+<FONT color="green">525</FONT>             * - P_LIVE_TYPE<a name="line.525"></a>
+<FONT color="green">526</FONT>             * - P_LIVE_PRICE_FOR_ME<a name="line.526"></a>
+<FONT color="green">527</FONT>             * - P_IDENTITY<a name="line.527"></a>
+<FONT color="green">528</FONT>             */<a name="line.528"></a>
+<FONT color="green">529</FONT>            public Participant mgetInfo() {<a name="line.529"></a>
+<FONT color="green">530</FONT>                    return (Participant) super.sidMultiGet(Property.mget_info_mreq, this);<a name="line.530"></a>
+<FONT color="green">531</FONT>            }<a name="line.531"></a>
+<FONT color="green">532</FONT>            /*** multiget the following properties for a list of Participant<a name="line.532"></a>
+<FONT color="green">533</FONT>             * - P_VOICE_STATUS<a name="line.533"></a>
+<FONT color="green">534</FONT>             * - P_TEXT_STATUS<a name="line.534"></a>
+<FONT color="green">535</FONT>             * - P_VIDEO_STATUS<a name="line.535"></a>
+<FONT color="green">536</FONT>             * - P_RANK<a name="line.536"></a>
+<FONT color="green">537</FONT>             * - P_LIVE_TYPE         * - P_LIVE_PRICE_FOR_ME<a name="line.537"></a>
+<FONT color="green">538</FONT>             * - P_IDENTITY<a name="line.538"></a>
+<FONT color="green">539</FONT>             * @param objects targets of the request<a name="line.539"></a>
+<FONT color="green">540</FONT>             * @return Participant[] responses<a name="line.540"></a>
+<FONT color="green">541</FONT>             */<a name="line.541"></a>
+<FONT color="green">542</FONT>            static public Participant[] mgetInfo(Participant[] objects) {<a name="line.542"></a>
+<FONT color="green">543</FONT>                    return (Participant[]) SidObject.sidMultiGet(Property.mget_info_mreq, objects, objects);<a name="line.543"></a>
+<FONT color="green">544</FONT>            }<a name="line.544"></a>
+<FONT color="green">545</FONT>            /** [ALL] ID of corresponding conversation. Here and below, [ALL] tag indicates that the property has meaning and is set in context of all participants in the conversation. [OTHERS] tag has meaning only for participants who are not the local user.  */<a name="line.545"></a>
+<FONT color="green">546</FONT>            public Conversation getConversation() {<a name="line.546"></a>
+<FONT color="green">547</FONT>                    synchronized(this) {<a name="line.547"></a>
+<FONT color="green">548</FONT>                            if ((mSidCached &amp; 0x1) != 0)<a name="line.548"></a>
+<FONT color="green">549</FONT>                                    return mConversation;<a name="line.549"></a>
+<FONT color="green">550</FONT>                    }<a name="line.550"></a>
+<FONT color="green">551</FONT>                    return (Conversation) sidRequestObjectProperty(Property.P_CONVERSATION);<a name="line.551"></a>
+<FONT color="green">552</FONT>            }<a name="line.552"></a>
+<FONT color="green">553</FONT>            /** [ALL] skypename OR pstn_number OR namespace:identity */<a name="line.553"></a>
+<FONT color="green">554</FONT>            public String getIdentity() {<a name="line.554"></a>
+<FONT color="green">555</FONT>                    synchronized(this) {<a name="line.555"></a>
+<FONT color="green">556</FONT>                            if ((mSidCached &amp; 0x2) != 0)<a name="line.556"></a>
+<FONT color="green">557</FONT>                                    return mIdentity;<a name="line.557"></a>
+<FONT color="green">558</FONT>                    }<a name="line.558"></a>
+<FONT color="green">559</FONT>                    return sidRequestStringProperty(Property.P_IDENTITY);<a name="line.559"></a>
+<FONT color="green">560</FONT>            }<a name="line.560"></a>
+<FONT color="green">561</FONT>            /** [ALL] Participant.RANK */<a name="line.561"></a>
+<FONT color="green">562</FONT>            public Rank getRank() {<a name="line.562"></a>
+<FONT color="green">563</FONT>                    synchronized(this) {<a name="line.563"></a>
+<FONT color="green">564</FONT>                            if ((mSidCached &amp; 0x4) != 0)<a name="line.564"></a>
+<FONT color="green">565</FONT>                                    return mRank;<a name="line.565"></a>
+<FONT color="green">566</FONT>                    }<a name="line.566"></a>
+<FONT color="green">567</FONT>                    return (Rank) sidRequestEnumProperty(Property.P_RANK);<a name="line.567"></a>
+<FONT color="green">568</FONT>            }<a name="line.568"></a>
+<FONT color="green">569</FONT>            /** Not set (should be: requested Participant.RANK, higher than the current one) */<a name="line.569"></a>
+<FONT color="green">570</FONT>            public Rank getRequestedRank() {<a name="line.570"></a>
+<FONT color="green">571</FONT>                    synchronized(this) {<a name="line.571"></a>
+<FONT color="green">572</FONT>                            if ((mSidCached &amp; 0x8) != 0)<a name="line.572"></a>
+<FONT color="green">573</FONT>                                    return mRequestedRank;<a name="line.573"></a>
+<FONT color="green">574</FONT>                    }<a name="line.574"></a>
+<FONT color="green">575</FONT>                    return (Rank) sidRequestEnumProperty(Property.P_REQUESTED_RANK);<a name="line.575"></a>
+<FONT color="green">576</FONT>            }<a name="line.576"></a>
+<FONT color="green">577</FONT>            /** [ALL] the typing indicator */<a name="line.577"></a>
+<FONT color="green">578</FONT>            public TextStatus getTextStatus() {<a name="line.578"></a>
+<FONT color="green">579</FONT>                    synchronized(this) {<a name="line.579"></a>
+<FONT color="green">580</FONT>                            if ((mSidCached &amp; 0x10) != 0)<a name="line.580"></a>
+<FONT color="green">581</FONT>                                    return mTextStatus;<a name="line.581"></a>
+<FONT color="green">582</FONT>                    }<a name="line.582"></a>
+<FONT color="green">583</FONT>                    return (TextStatus) sidRequestEnumProperty(Property.P_TEXT_STATUS);<a name="line.583"></a>
+<FONT color="green">584</FONT>            }<a name="line.584"></a>
+<FONT color="green">585</FONT>            /** [ALL] voice status */<a name="line.585"></a>
+<FONT color="green">586</FONT>            public VoiceStatus getVoiceStatus() {<a name="line.586"></a>
+<FONT color="green">587</FONT>                    synchronized(this) {<a name="line.587"></a>
+<FONT color="green">588</FONT>                            if ((mSidCached &amp; 0x20) != 0)<a name="line.588"></a>
+<FONT color="green">589</FONT>                                    return mVoiceStatus;<a name="line.589"></a>
+<FONT color="green">590</FONT>                    }<a name="line.590"></a>
+<FONT color="green">591</FONT>                    return (VoiceStatus) sidRequestEnumProperty(Property.P_VOICE_STATUS);<a name="line.591"></a>
+<FONT color="green">592</FONT>            }<a name="line.592"></a>
+<FONT color="green">593</FONT>            /** [ALL] video status */<a name="line.593"></a>
+<FONT color="green">594</FONT>            public VideoStatus getVideoStatus() {<a name="line.594"></a>
+<FONT color="green">595</FONT>                    synchronized(this) {<a name="line.595"></a>
+<FONT color="green">596</FONT>                            if ((mSidCached &amp; 0x40) != 0)<a name="line.596"></a>
+<FONT color="green">597</FONT>                                    return mVideoStatus;<a name="line.597"></a>
+<FONT color="green">598</FONT>                    }<a name="line.598"></a>
+<FONT color="green">599</FONT>                    return (VideoStatus) sidRequestEnumProperty(Property.P_VIDEO_STATUS);<a name="line.599"></a>
+<FONT color="green">600</FONT>            }<a name="line.600"></a>
+<FONT color="green">601</FONT>            /** [ALL] identity that was used to establish current live session with that participant (can be different from participant identity) */<a name="line.601"></a>
+<FONT color="green">602</FONT>            public String getLiveIdentity() {<a name="line.602"></a>
+<FONT color="green">603</FONT>                    synchronized(this) {<a name="line.603"></a>
+<FONT color="green">604</FONT>                            if ((mSidCached &amp; 0x80) != 0)<a name="line.604"></a>
+<FONT color="green">605</FONT>                                    return mLiveIdentity;<a name="line.605"></a>
+<FONT color="green">606</FONT>                    }<a name="line.606"></a>
+<FONT color="green">607</FONT>                    return sidRequestStringProperty(Property.P_LIVE_IDENTITY);<a name="line.607"></a>
+<FONT color="green">608</FONT>            }<a name="line.608"></a>
+<FONT color="green">609</FONT>            /** [OTHERS] 'price_per_minute_float currency' - eg '0.01 EUR'. Note that this property obtains value only after the participant goes into live state. It cannot be used to display call rates before the call starts.  */<a name="line.609"></a>
+<FONT color="green">610</FONT>            public String getLivePriceForMe() {<a name="line.610"></a>
+<FONT color="green">611</FONT>                    synchronized(this) {<a name="line.611"></a>
+<FONT color="green">612</FONT>                            if ((mSidCached &amp; 0x100) != 0)<a name="line.612"></a>
+<FONT color="green">613</FONT>                                    return mLivePriceForMe;<a name="line.613"></a>
+<FONT color="green">614</FONT>                    }<a name="line.614"></a>
+<FONT color="green">615</FONT>                    return sidRequestStringProperty(Property.P_LIVE_PRICE_FOR_ME);<a name="line.615"></a>
+<FONT color="green">616</FONT>            }<a name="line.616"></a>
+<FONT color="green">617</FONT>            /** [OTHERS] list of identities where the live session is being forwarded (if they are disclosed), space separated */<a name="line.617"></a>
+<FONT color="green">618</FONT>            public String getLiveFwdIdentities() {<a name="line.618"></a>
+<FONT color="green">619</FONT>                    synchronized(this) {<a name="line.619"></a>
+<FONT color="green">620</FONT>                            if ((mSidCached &amp; 0x200) != 0)<a name="line.620"></a>
+<FONT color="green">621</FONT>                                    return mLiveFwdIdentities;<a name="line.621"></a>
+<FONT color="green">622</FONT>                    }<a name="line.622"></a>
+<FONT color="green">623</FONT>                    return sidRequestStringProperty(Property.P_LIVE_FWD_IDENTITIES);<a name="line.623"></a>
+<FONT color="green">624</FONT>            }<a name="line.624"></a>
+<FONT color="green">625</FONT>            /** [ALL] time of joining the live session */<a name="line.625"></a>
+<FONT color="green">626</FONT>            public long getLiveStartTimestamp() {<a name="line.626"></a>
+<FONT color="green">627</FONT>                    synchronized(this) {<a name="line.627"></a>
+<FONT color="green">628</FONT>                            if ((mSidCached &amp; 0x400) != 0)<a name="line.628"></a>
+<FONT color="green">629</FONT>                                    return mLiveStartTimestamp;<a name="line.629"></a>
+<FONT color="green">630</FONT>                    }<a name="line.630"></a>
+<FONT color="green">631</FONT>                    return sidRequestTimestampProperty(Property.P_LIVE_START_TIMESTAMP);<a name="line.631"></a>
+<FONT color="green">632</FONT>            }<a name="line.632"></a>
+<FONT color="green">633</FONT>            /** [ALL] current 'loudness' level when SPEAKING (0..10) */<a name="line.633"></a>
+<FONT color="green">634</FONT>            public int getSoundLevel() {<a name="line.634"></a>
+<FONT color="green">635</FONT>                    synchronized(this) {<a name="line.635"></a>
+<FONT color="green">636</FONT>                            if ((mSidCached &amp; 0x800) != 0)<a name="line.636"></a>
+<FONT color="green">637</FONT>                                    return mSoundLevel;<a name="line.637"></a>
+<FONT color="green">638</FONT>                    }<a name="line.638"></a>
+<FONT color="green">639</FONT>                    return sidRequestUintProperty(Property.P_SOUND_LEVEL);<a name="line.639"></a>
+<FONT color="green">640</FONT>            }<a name="line.640"></a>
+<FONT color="green">641</FONT>            /** [OTHERS] call (audio and video) debug info */<a name="line.641"></a>
+<FONT color="green">642</FONT>            public String getDebugInfo() {<a name="line.642"></a>
+<FONT color="green">643</FONT>                    synchronized(this) {<a name="line.643"></a>
+<FONT color="green">644</FONT>                            if ((mSidCached &amp; 0x1000) != 0)<a name="line.644"></a>
+<FONT color="green">645</FONT>                                    return mDebugInfo;<a name="line.645"></a>
+<FONT color="green">646</FONT>                    }<a name="line.646"></a>
+<FONT color="green">647</FONT>                    return sidRequestStringProperty(Property.P_DEBUG_INFO);<a name="line.647"></a>
+<FONT color="green">648</FONT>            }<a name="line.648"></a>
+<FONT color="green">649</FONT>            /** [OTHERS] DEPRECATED, use last_leavereason instead */<a name="line.649"></a>
+<FONT color="green">650</FONT>            public String getLastVoiceError() {<a name="line.650"></a>
+<FONT color="green">651</FONT>                    synchronized(this) {<a name="line.651"></a>
+<FONT color="green">652</FONT>                            if ((mSidCached &amp; 0x2000) != 0)<a name="line.652"></a>
+<FONT color="green">653</FONT>                                    return mLastVoiceError;<a name="line.653"></a>
+<FONT color="green">654</FONT>                    }<a name="line.654"></a>
+<FONT color="green">655</FONT>                    return sidRequestStringProperty(Property.P_LAST_VOICE_ERROR);<a name="line.655"></a>
+<FONT color="green">656</FONT>            }<a name="line.656"></a>
+<FONT color="green">657</FONT>            /** [ALL] space separated tokens values: CPU_INUSE CPU_SLOW CPU_HIGH HIGH_ECHO HIGH_NOISE MUTED_INPUT LOW_INPUT MUTED_INPUT_ACTIVITY FW_STRONG FW_BAD NOT_UDP CALL_BW_LOW RECORD_ERROR + values in video debug info */<a name="line.657"></a>
+<FONT color="green">658</FONT>            public String getQualityProblems() {<a name="line.658"></a>
+<FONT color="green">659</FONT>                    synchronized(this) {<a name="line.659"></a>
+<FONT color="green">660</FONT>                            if ((mSidCached &amp; 0x4000) != 0)<a name="line.660"></a>
+<FONT color="green">661</FONT>                                    return mQualityProblems;<a name="line.661"></a>
+<FONT color="green">662</FONT>                    }<a name="line.662"></a>
+<FONT color="green">663</FONT>                    return sidRequestStringProperty(Property.P_QUALITY_PROBLEMS);<a name="line.663"></a>
+<FONT color="green">664</FONT>            }<a name="line.664"></a>
+<FONT color="green">665</FONT>            /** [ALL] participant type during livesession as specified in IDENTITYTYPE */<a name="line.665"></a>
+<FONT color="green">666</FONT>            public Skype.IdentityType getLiveType() {<a name="line.666"></a>
+<FONT color="green">667</FONT>                    synchronized(this) {<a name="line.667"></a>
+<FONT color="green">668</FONT>                            if ((mSidCached &amp; 0x8000) != 0)<a name="line.668"></a>
+<FONT color="green">669</FONT>                                    return mLiveType;<a name="line.669"></a>
+<FONT color="green">670</FONT>                    }<a name="line.670"></a>
+<FONT color="green">671</FONT>                    return (Skype.IdentityType) sidRequestEnumProperty(Property.P_LIVE_TYPE);<a name="line.671"></a>
+<FONT color="green">672</FONT>            }<a name="line.672"></a>
+<FONT color="green">673</FONT>            /** [OTHERS] participant livesession country code - used for emergency calls only atm */<a name="line.673"></a>
+<FONT color="green">674</FONT>            public String getLiveCountry() {<a name="line.674"></a>
+<FONT color="green">675</FONT>                    synchronized(this) {<a name="line.675"></a>
+<FONT color="green">676</FONT>                            if ((mSidCached &amp; 0x10000) != 0)<a name="line.676"></a>
+<FONT color="green">677</FONT>                                    return mLiveCountry;<a name="line.677"></a>
+<FONT color="green">678</FONT>                    }<a name="line.678"></a>
+<FONT color="green">679</FONT>                    return sidRequestStringProperty(Property.P_LIVE_COUNTRY);<a name="line.679"></a>
+<FONT color="green">680</FONT>            }<a name="line.680"></a>
+<FONT color="green">681</FONT>            /** [OTHERS] Transferor identity (transferee side)  */<a name="line.681"></a>
+<FONT color="green">682</FONT>            public String getTransferredBy() {<a name="line.682"></a>
+<FONT color="green">683</FONT>                    synchronized(this) {<a name="line.683"></a>
+<FONT color="green">684</FONT>                            if ((mSidCached &amp; 0x20000) != 0)<a name="line.684"></a>
+<FONT color="green">685</FONT>                                    return mTransferredBy;<a name="line.685"></a>
+<FONT color="green">686</FONT>                    }<a name="line.686"></a>
+<FONT color="green">687</FONT>                    return sidRequestStringProperty(Property.P_TRANSFERRED_BY);<a name="line.687"></a>
+<FONT color="green">688</FONT>            }<a name="line.688"></a>
+<FONT color="green">689</FONT>            /** [OTHERS] Identity of recipient of transfer (transferor side, caller side)  */<a name="line.689"></a>
+<FONT color="green">690</FONT>            public String getTransferredTo() {<a name="line.690"></a>
+<FONT color="green">691</FONT>                    synchronized(this) {<a name="line.691"></a>
+<FONT color="green">692</FONT>                            if ((mSidCached &amp; 0x40000) != 0)<a name="line.692"></a>
+<FONT color="green">693</FONT>                                    return mTransferredTo;<a name="line.693"></a>
+<FONT color="green">694</FONT>                    }<a name="line.694"></a>
+<FONT color="green">695</FONT>                    return sidRequestStringProperty(Property.P_TRANSFERRED_TO);<a name="line.695"></a>
+<FONT color="green">696</FONT>            }<a name="line.696"></a>
+<FONT color="green">697</FONT>            /** [ALL] Identity of the user who added this participant to the conversation, type: Sid.String   */<a name="line.697"></a>
+<FONT color="green">698</FONT>            public String getAdder() {<a name="line.698"></a>
+<FONT color="green">699</FONT>                    synchronized(this) {<a name="line.699"></a>
+<FONT color="green">700</FONT>                            if ((mSidCached &amp; 0x80000) != 0)<a name="line.700"></a>
+<FONT color="green">701</FONT>                                    return mAdder;<a name="line.701"></a>
+<FONT color="green">702</FONT>                    }<a name="line.702"></a>
+<FONT color="green">703</FONT>                    return sidRequestStringProperty(Property.P_ADDER);<a name="line.703"></a>
+<FONT color="green">704</FONT>            }<a name="line.704"></a>
+<FONT color="green">705</FONT>            /** [OTHERS] Last reason for leaving conversation or live session. Provides an enum alternative to last_voice_error as well as the reason this participant RETIRED from the conversation.   */<a name="line.705"></a>
+<FONT color="green">706</FONT>            public Skype.LeaveReason getLastLeavereason() {<a name="line.706"></a>
+<FONT color="green">707</FONT>                    synchronized(this) {<a name="line.707"></a>
+<FONT color="green">708</FONT>                            if ((mSidCached &amp; 0x100000) != 0)<a name="line.708"></a>
+<FONT color="green">709</FONT>                                    return mLastLeavereason;<a name="line.709"></a>
+<FONT color="green">710</FONT>                    }<a name="line.710"></a>
+<FONT color="green">711</FONT>                    return (Skype.LeaveReason) sidRequestEnumProperty(Property.P_LAST_LEAVEREASON);<a name="line.711"></a>
+<FONT color="green">712</FONT>            }<a name="line.712"></a>
+<FONT color="green">713</FONT>            public String sidGetStringProperty(final PropertyEnumConverting prop) {<a name="line.713"></a>
+<FONT color="green">714</FONT>                    switch(prop.getId()) {<a name="line.714"></a>
+<FONT color="green">715</FONT>                    case 931:<a name="line.715"></a>
+<FONT color="green">716</FONT>                            return mIdentity;<a name="line.716"></a>
+<FONT color="green">717</FONT>                    case 943:<a name="line.717"></a>
+<FONT color="green">718</FONT>                            return mLiveIdentity;<a name="line.718"></a>
+<FONT color="green">719</FONT>                    case 938:<a name="line.719"></a>
+<FONT color="green">720</FONT>                            return mLivePriceForMe;<a name="line.720"></a>
+<FONT color="green">721</FONT>                    case 948:<a name="line.721"></a>
+<FONT color="green">722</FONT>                            return mLiveFwdIdentities;<a name="line.722"></a>
+<FONT color="green">723</FONT>                    case 942:<a name="line.723"></a>
+<FONT color="green">724</FONT>                            return mDebugInfo;<a name="line.724"></a>
+<FONT color="green">725</FONT>                    case 947:<a name="line.725"></a>
+<FONT color="green">726</FONT>                            return mLastVoiceError;<a name="line.726"></a>
+<FONT color="green">727</FONT>                    case 949:<a name="line.727"></a>
+<FONT color="green">728</FONT>                            return mQualityProblems;<a name="line.728"></a>
+<FONT color="green">729</FONT>                    case 951:<a name="line.729"></a>
+<FONT color="green">730</FONT>                            return mLiveCountry;<a name="line.730"></a>
+<FONT color="green">731</FONT>                    case 952:<a name="line.731"></a>
+<FONT color="green">732</FONT>                            return mTransferredBy;<a name="line.732"></a>
+<FONT color="green">733</FONT>                    case 953:<a name="line.733"></a>
+<FONT color="green">734</FONT>                            return mTransferredTo;<a name="line.734"></a>
+<FONT color="green">735</FONT>                    case 954:<a name="line.735"></a>
+<FONT color="green">736</FONT>                            return mAdder;<a name="line.736"></a>
+<FONT color="green">737</FONT>                    }<a name="line.737"></a>
+<FONT color="green">738</FONT>                    return "";<a name="line.738"></a>
+<FONT color="green">739</FONT>            }<a name="line.739"></a>
+<FONT color="green">740</FONT>            public SidObject sidGetObjectProperty(final PropertyEnumConverting prop) {<a name="line.740"></a>
+<FONT color="green">741</FONT>                    assert(prop.getId() == 930);<a name="line.741"></a>
+<FONT color="green">742</FONT>                    return mConversation;<a name="line.742"></a>
+<FONT color="green">743</FONT>            }<a name="line.743"></a>
+<FONT color="green">744</FONT>            public int sidGetIntProperty(final PropertyEnumConverting prop) {<a name="line.744"></a>
+<FONT color="green">745</FONT>                    assert(prop.getId() == 941);<a name="line.745"></a>
+<FONT color="green">746</FONT>                    return mSoundLevel;<a name="line.746"></a>
+<FONT color="green">747</FONT>            }<a name="line.747"></a>
+<FONT color="green">748</FONT>            public EnumConverting sidGetEnumProperty(final PropertyEnumConverting prop) {<a name="line.748"></a>
+<FONT color="green">749</FONT>                    switch(prop.getId()) {<a name="line.749"></a>
+<FONT color="green">750</FONT>                    case 932:<a name="line.750"></a>
+<FONT color="green">751</FONT>                            return mRank;<a name="line.751"></a>
+<FONT color="green">752</FONT>                    case 933:<a name="line.752"></a>
+<FONT color="green">753</FONT>                            return mRequestedRank;<a name="line.753"></a>
+<FONT color="green">754</FONT>                    case 934:<a name="line.754"></a>
+<FONT color="green">755</FONT>                            return mTextStatus;<a name="line.755"></a>
+<FONT color="green">756</FONT>                    case 935:<a name="line.756"></a>
+<FONT color="green">757</FONT>                            return mVoiceStatus;<a name="line.757"></a>
+<FONT color="green">758</FONT>                    case 936:<a name="line.758"></a>
+<FONT color="green">759</FONT>                            return mVideoStatus;<a name="line.759"></a>
+<FONT color="green">760</FONT>                    case 950:<a name="line.760"></a>
+<FONT color="green">761</FONT>                            return mLiveType;<a name="line.761"></a>
+<FONT color="green">762</FONT>                    case 955:<a name="line.762"></a>
+<FONT color="green">763</FONT>                            return mLastLeavereason;<a name="line.763"></a>
+<FONT color="green">764</FONT>                    }<a name="line.764"></a>
+<FONT color="green">765</FONT>                    return null;<a name="line.765"></a>
+<FONT color="green">766</FONT>            }<a name="line.766"></a>
+<FONT color="green">767</FONT>            public String getPropertyAsString(final int prop) {<a name="line.767"></a>
+<FONT color="green">768</FONT>                    switch (prop) {<a name="line.768"></a>
+<FONT color="green">769</FONT>                    case 930: return getConversation() != null ? Integer.toString(getConversation().getOid()) : "(null)";<a name="line.769"></a>
+<FONT color="green">770</FONT>                    case 931: return getIdentity();<a name="line.770"></a>
+<FONT color="green">771</FONT>                    case 932: return getRank().toString();<a name="line.771"></a>
+<FONT color="green">772</FONT>                    case 933: return getRequestedRank().toString();<a name="line.772"></a>
+<FONT color="green">773</FONT>                    case 934: return getTextStatus().toString();<a name="line.773"></a>
+<FONT color="green">774</FONT>                    case 935: return getVoiceStatus().toString();<a name="line.774"></a>
+<FONT color="green">775</FONT>                    case 936: return getVideoStatus().toString();<a name="line.775"></a>
+<FONT color="green">776</FONT>                    case 943: return getLiveIdentity();<a name="line.776"></a>
+<FONT color="green">777</FONT>                    case 938: return getLivePriceForMe();<a name="line.777"></a>
+<FONT color="green">778</FONT>                    case 948: return getLiveFwdIdentities();<a name="line.778"></a>
+<FONT color="green">779</FONT>                    case 941: return Integer.toString(getSoundLevel());<a name="line.779"></a>
+<FONT color="green">780</FONT>                    case 942: return getDebugInfo();<a name="line.780"></a>
+<FONT color="green">781</FONT>                    case 947: return getLastVoiceError();<a name="line.781"></a>
+<FONT color="green">782</FONT>                    case 949: return getQualityProblems();          case 950: return getLiveType().toString();<a name="line.782"></a>
+<FONT color="green">783</FONT>                    case 951: return getLiveCountry();<a name="line.783"></a>
+<FONT color="green">784</FONT>                    case 952: return getTransferredBy();<a name="line.784"></a>
+<FONT color="green">785</FONT>                    case 953: return getTransferredTo();<a name="line.785"></a>
+<FONT color="green">786</FONT>                    case 954: return getAdder();<a name="line.786"></a>
+<FONT color="green">787</FONT>                    case 955: return getLastLeavereason().toString();<a name="line.787"></a>
+<FONT color="green">788</FONT>                    }<a name="line.788"></a>
+<FONT color="green">789</FONT>                    return "&lt;unkown&gt;";<a name="line.789"></a>
+<FONT color="green">790</FONT>            }<a name="line.790"></a>
+<FONT color="green">791</FONT>            public String getPropertyAsString(final Property prop) {<a name="line.791"></a>
+<FONT color="green">792</FONT>                    return getPropertyAsString(prop.getId());<a name="line.792"></a>
+<FONT color="green">793</FONT>            }<a name="line.793"></a>
+<FONT color="green">794</FONT>            protected void sidOnChangedProperty(final int propertyId, final int value, final String svalue) {<a name="line.794"></a>
+<FONT color="green">795</FONT>                    final Property property = Property.get(propertyId);<a name="line.795"></a>
+<FONT color="green">796</FONT>                    if (property == Property.P_UNKNOWN) return;<a name="line.796"></a>
+<FONT color="green">797</FONT>                    final int idx = property.getIdx();<a name="line.797"></a>
+<FONT color="green">798</FONT>                    if (idx != 0) {<a name="line.798"></a>
+<FONT color="green">799</FONT>                            int bit  = 1&lt;&lt;((idx-1)%32);<a name="line.799"></a>
+<FONT color="green">800</FONT>                            synchronized (this) {<a name="line.800"></a>
+<FONT color="green">801</FONT>                                    mSidCached|=bit;<a name="line.801"></a>
+<FONT color="green">802</FONT>                                    switch (propertyId) {<a name="line.802"></a>
+<FONT color="green">803</FONT>                                    case 930:<a name="line.803"></a>
+<FONT color="green">804</FONT>                                            if (value != 0)<a name="line.804"></a>
+<FONT color="green">805</FONT>                                                    mConversation = (Conversation) mSidRoot.sidGetObject(property.getModuleId(), value);<a name="line.805"></a>
+<FONT color="green">806</FONT>                                            else {<a name="line.806"></a>
+<FONT color="green">807</FONT>                                                    mConversation = null;<a name="line.807"></a>
+<FONT color="green">808</FONT>                                                    mSidCached &amp;=~bit;<a name="line.808"></a>
+<FONT color="green">809</FONT>                                            }<a name="line.809"></a>
+<FONT color="green">810</FONT>                                            break;<a name="line.810"></a>
+<FONT color="green">811</FONT>                                    case 931:<a name="line.811"></a>
+<FONT color="green">812</FONT>                                            if (svalue != null) mIdentity = svalue;<a name="line.812"></a>
+<FONT color="green">813</FONT>                                            else mSidCached &amp;=~bit;<a name="line.813"></a>
+<FONT color="green">814</FONT>                                            break;<a name="line.814"></a>
+<FONT color="green">815</FONT>                                    case 932: mRank = Rank.get(value); break;<a name="line.815"></a>
+<FONT color="green">816</FONT>                                    case 933: mRequestedRank = Rank.get(value); break;<a name="line.816"></a>
+<FONT color="green">817</FONT>                                    case 934: mTextStatus = TextStatus.get(value); break;<a name="line.817"></a>
+<FONT color="green">818</FONT>                                    case 935: mVoiceStatus = VoiceStatus.get(value); break;<a name="line.818"></a>
+<FONT color="green">819</FONT>                                    case 936: mVideoStatus = VideoStatus.get(value); break;<a name="line.819"></a>
+<FONT color="green">820</FONT>                                    case 943:<a name="line.820"></a>
+<FONT color="green">821</FONT>                                            if (svalue != null) mLiveIdentity = svalue;<a name="line.821"></a>
+<FONT color="green">822</FONT>                                            else mSidCached &amp;=~bit;<a name="line.822"></a>
+<FONT color="green">823</FONT>                                            break;<a name="line.823"></a>
+<FONT color="green">824</FONT>                                    case 938:<a name="line.824"></a>
+<FONT color="green">825</FONT>                                            if (svalue != null) mLivePriceForMe = svalue;<a name="line.825"></a>
+<FONT color="green">826</FONT>                                            else mSidCached &amp;=~bit;<a name="line.826"></a>
+<FONT color="green">827</FONT>                                            break;<a name="line.827"></a>
+<FONT color="green">828</FONT>                                    case 948:<a name="line.828"></a>
+<FONT color="green">829</FONT>                                            if (svalue != null) mLiveFwdIdentities = svalue;<a name="line.829"></a>
+<FONT color="green">830</FONT>                                            else mSidCached &amp;=~bit;<a name="line.830"></a>
+<FONT color="green">831</FONT>                                            break;<a name="line.831"></a>
+<FONT color="green">832</FONT>                                    case 941: mSoundLevel = value; break;<a name="line.832"></a>
+<FONT color="green">833</FONT>                                    case 942:<a name="line.833"></a>
+<FONT color="green">834</FONT>                                            if (svalue != null) mDebugInfo = svalue;<a name="line.834"></a>
+<FONT color="green">835</FONT>                                            else mSidCached &amp;=~bit;<a name="line.835"></a>
+<FONT color="green">836</FONT>                                            break;<a name="line.836"></a>
+<FONT color="green">837</FONT>                                    case 947:<a name="line.837"></a>
+<FONT color="green">838</FONT>                                            if (svalue != null) mLastVoiceError = svalue;<a name="line.838"></a>
+<FONT color="green">839</FONT>                                            else mSidCached &amp;=~bit;<a name="line.839"></a>
+<FONT color="green">840</FONT>                                            break;<a name="line.840"></a>
+<FONT color="green">841</FONT>                                    case 949:<a name="line.841"></a>
+<FONT color="green">842</FONT>                                            if (svalue != null) mQualityProblems = svalue;<a name="line.842"></a>
+<FONT color="green">843</FONT>                                            else mSidCached &amp;=~bit;<a name="line.843"></a>
+<FONT color="green">844</FONT>                                            break;<a name="line.844"></a>
+<FONT color="green">845</FONT>                                    case 950: mLiveType = Skype.IdentityType.get(value); break;<a name="line.845"></a>
+<FONT color="green">846</FONT>                                    case 951:<a name="line.846"></a>
+<FONT color="green">847</FONT>                                            if (svalue != null) mLiveCountry = svalue;<a name="line.847"></a>
+<FONT color="green">848</FONT>                                            else mSidCached &amp;=~bit;<a name="line.848"></a>
+<FONT color="green">849</FONT>                                            break;<a name="line.849"></a>
+<FONT color="green">850</FONT>                                    case 952:<a name="line.850"></a>
+<FONT color="green">851</FONT>                                            if (svalue != null) mTransferredBy = svalue;<a name="line.851"></a>
+<FONT color="green">852</FONT>                                            else mSidCached &amp;=~bit;<a name="line.852"></a>
+<FONT color="green">853</FONT>                                            break;<a name="line.853"></a>
+<FONT color="green">854</FONT>                                    case 953:<a name="line.854"></a>
+<FONT color="green">855</FONT>                                            if (svalue != null) mTransferredTo = svalue;<a name="line.855"></a>
+<FONT color="green">856</FONT>                                            else mSidCached &amp;=~bit;<a name="line.856"></a>
+<FONT color="green">857</FONT>                                            break;<a name="line.857"></a>
+<FONT color="green">858</FONT>                                    case 954:<a name="line.858"></a>
+<FONT color="green">859</FONT>                                            if (svalue != null) mAdder = svalue;<a name="line.859"></a>
+<FONT color="green">860</FONT>                                            else mSidCached &amp;=~bit;<a name="line.860"></a>
+<FONT color="green">861</FONT>                                            break;<a name="line.861"></a>
+<FONT color="green">862</FONT>                                    case 955: mLastLeavereason = Skype.LeaveReason.get(value); break;<a name="line.862"></a>
+<FONT color="green">863</FONT>                                    default: mSidCached&amp;=~bit; break;<a name="line.863"></a>
+<FONT color="green">864</FONT>                                    }<a name="line.864"></a>
+<FONT color="green">865</FONT>                            }<a name="line.865"></a>
+<FONT color="green">866</FONT>                    }<a name="line.866"></a>
+<FONT color="green">867</FONT>                    ParticipantListener listener = ((Skype) mSidRoot).getParticipantListener();<a name="line.867"></a>
+<FONT color="green">868</FONT>                    if (listener != null)<a name="line.868"></a>
+<FONT color="green">869</FONT>                            listener.onPropertyChange(this, property, value, svalue);<a name="line.869"></a>
+<FONT color="green">870</FONT>            }<a name="line.870"></a>
+<FONT color="green">871</FONT>            public void sidSetProperty(final PropertyEnumConverting prop, final String newValue) {<a name="line.871"></a>
+<FONT color="green">872</FONT>                    final int propId = prop.getId();<a name="line.872"></a>
+<FONT color="green">873</FONT>                    switch(propId) {<a name="line.873"></a>
+<FONT color="green">874</FONT>                    case 931:<a name="line.874"></a>
+<FONT color="green">875</FONT>                            mSidCached |= 0x2;<a name="line.875"></a>
+<FONT color="green">876</FONT>                            mIdentity=  newValue;<a name="line.876"></a>
+<FONT color="green">877</FONT>                            break;<a name="line.877"></a>
+<FONT color="green">878</FONT>                    case 943:<a name="line.878"></a>
+<FONT color="green">879</FONT>                            mSidCached |= 0x80;<a name="line.879"></a>
+<FONT color="green">880</FONT>                            mLiveIdentity=  newValue;<a name="line.880"></a>
+<FONT color="green">881</FONT>                            break;<a name="line.881"></a>
+<FONT color="green">882</FONT>                    case 938:<a name="line.882"></a>
+<FONT color="green">883</FONT>                            mSidCached |= 0x100;<a name="line.883"></a>
+<FONT color="green">884</FONT>                            mLivePriceForMe=  newValue;<a name="line.884"></a>
+<FONT color="green">885</FONT>                            break;<a name="line.885"></a>
+<FONT color="green">886</FONT>                    case 948:<a name="line.886"></a>
+<FONT color="green">887</FONT>                            mSidCached |= 0x200;<a name="line.887"></a>
+<FONT color="green">888</FONT>                            mLiveFwdIdentities=  newValue;<a name="line.888"></a>
+<FONT color="green">889</FONT>                            break;<a name="line.889"></a>
+<FONT color="green">890</FONT>                    case 942:<a name="line.890"></a>
+<FONT color="green">891</FONT>                            mSidCached |= 0x1000;<a name="line.891"></a>
+<FONT color="green">892</FONT>                            mDebugInfo=  newValue;<a name="line.892"></a>
+<FONT color="green">893</FONT>                            break;<a name="line.893"></a>
+<FONT color="green">894</FONT>                    case 947:<a name="line.894"></a>
+<FONT color="green">895</FONT>                            mSidCached |= 0x2000;<a name="line.895"></a>
+<FONT color="green">896</FONT>                            mLastVoiceError=  newValue;<a name="line.896"></a>
+<FONT color="green">897</FONT>                            break;<a name="line.897"></a>
+<FONT color="green">898</FONT>                    case 949:<a name="line.898"></a>
+<FONT color="green">899</FONT>                            mSidCached |= 0x4000;<a name="line.899"></a>
+<FONT color="green">900</FONT>                            mQualityProblems=  newValue;<a name="line.900"></a>
+<FONT color="green">901</FONT>                            break;<a name="line.901"></a>
+<FONT color="green">902</FONT>                    case 951:<a name="line.902"></a>
+<FONT color="green">903</FONT>                            mSidCached |= 0x10000;<a name="line.903"></a>
+<FONT color="green">904</FONT>                            mLiveCountry=  newValue;<a name="line.904"></a>
+<FONT color="green">905</FONT>                            break;<a name="line.905"></a>
+<FONT color="green">906</FONT>                    case 952:<a name="line.906"></a>
+<FONT color="green">907</FONT>                            mSidCached |= 0x20000;<a name="line.907"></a>
+<FONT color="green">908</FONT>                            mTransferredBy=  newValue;<a name="line.908"></a>
+<FONT color="green">909</FONT>                            break;<a name="line.909"></a>
+<FONT color="green">910</FONT>                    case 953:<a name="line.910"></a>
+<FONT color="green">911</FONT>                            mSidCached |= 0x40000;<a name="line.911"></a>
+<FONT color="green">912</FONT>                            mTransferredTo=  newValue;<a name="line.912"></a>
+<FONT color="green">913</FONT>                            break;<a name="line.913"></a>
+<FONT color="green">914</FONT>                    case 954:<a name="line.914"></a>
+<FONT color="green">915</FONT>                            mSidCached |= 0x80000;<a name="line.915"></a>
+<FONT color="green">916</FONT>                            mAdder=  newValue;<a name="line.916"></a>
+<FONT color="green">917</FONT>                            break;<a name="line.917"></a>
+<FONT color="green">918</FONT>                    }<a name="line.918"></a>
+<FONT color="green">919</FONT>            }<a name="line.919"></a>
+<FONT color="green">920</FONT>            public void sidSetProperty(final PropertyEnumConverting prop, final SidObject newValue) {<a name="line.920"></a>
+<FONT color="green">921</FONT>                    final int propId = prop.getId();<a name="line.921"></a>
+<FONT color="green">922</FONT>                    assert(propId == 930);<a name="line.922"></a>
+<FONT color="green">923</FONT>                    mSidCached |= 0x1;<a name="line.923"></a>
+<FONT color="green">924</FONT>                    mConversation= (Conversation) newValue;<a name="line.924"></a>
+<FONT color="green">925</FONT>            }<a name="line.925"></a>
+<FONT color="green">926</FONT>            public void sidSetProperty(final PropertyEnumConverting prop, final int newValue) {<a name="line.926"></a>
+<FONT color="green">927</FONT>                    final int propId = prop.getId();<a name="line.927"></a>
+<FONT color="green">928</FONT>                    switch(propId) {<a name="line.928"></a>
+<FONT color="green">929</FONT>                    case 932:<a name="line.929"></a>
+<FONT color="green">930</FONT>                            mSidCached |= 0x4;<a name="line.930"></a>
+<FONT color="green">931</FONT>                            mRank= Rank.get(newValue);<a name="line.931"></a>
+<FONT color="green">932</FONT>                            break;<a name="line.932"></a>
+<FONT color="green">933</FONT>                    case 933:<a name="line.933"></a>
+<FONT color="green">934</FONT>                            mSidCached |= 0x8;<a name="line.934"></a>
+<FONT color="green">935</FONT>                            mRequestedRank= Rank.get(newValue);<a name="line.935"></a>
+<FONT color="green">936</FONT>                            break;<a name="line.936"></a>
+<FONT color="green">937</FONT>                    case 934:<a name="line.937"></a>
+<FONT color="green">938</FONT>                            mSidCached |= 0x10;<a name="line.938"></a>
+<FONT color="green">939</FONT>                            mTextStatus= TextStatus.get(newValue);<a name="line.939"></a>
+<FONT color="green">940</FONT>                            break;<a name="line.940"></a>
+<FONT color="green">941</FONT>                    case 935:<a name="line.941"></a>
+<FONT color="green">942</FONT>                            mSidCached |= 0x20;<a name="line.942"></a>
+<FONT color="green">943</FONT>                            mVoiceStatus= VoiceStatus.get(newValue);<a name="line.943"></a>
+<FONT color="green">944</FONT>                            break;<a name="line.944"></a>
+<FONT color="green">945</FONT>                    case 936:<a name="line.945"></a>
+<FONT color="green">946</FONT>                            mSidCached |= 0x40;<a name="line.946"></a>
+<FONT color="green">947</FONT>                            mVideoStatus= VideoStatus.get(newValue);<a name="line.947"></a>
+<FONT color="green">948</FONT>                            break;<a name="line.948"></a>
+<FONT color="green">949</FONT>                    case 941:<a name="line.949"></a>
+<FONT color="green">950</FONT>                            mSidCached |= 0x800;<a name="line.950"></a>
+<FONT color="green">951</FONT>                            mSoundLevel=  newValue;<a name="line.951"></a>
+<FONT color="green">952</FONT>                            break;<a name="line.952"></a>
+<FONT color="green">953</FONT>                    case 950:<a name="line.953"></a>
+<FONT color="green">954</FONT>                            mSidCached |= 0x8000;<a name="line.954"></a>
+<FONT color="green">955</FONT>                            mLiveType= Skype.IdentityType.get(newValue);<a name="line.955"></a>
+<FONT color="green">956</FONT>                            break;<a name="line.956"></a>
+<FONT color="green">957</FONT>                    case 955:<a name="line.957"></a>
+<FONT color="green">958</FONT>                            mSidCached |= 0x100000;<a name="line.958"></a>
+<FONT color="green">959</FONT>                            mLastLeavereason= Skype.LeaveReason.get(newValue);<a name="line.959"></a>
+<FONT color="green">960</FONT>                            break;<a name="line.960"></a>
+<FONT color="green">961</FONT>                    }<a name="line.961"></a>
+<FONT color="green">962</FONT>            }<a name="line.962"></a>
+<FONT color="green">963</FONT>            public Conversation       mConversation;<a name="line.963"></a>
+<FONT color="green">964</FONT>            public String             mIdentity;<a name="line.964"></a>
+<FONT color="green">965</FONT>            public Rank               mRank;<a name="line.965"></a>
+<FONT color="green">966</FONT>            public Rank               mRequestedRank;<a name="line.966"></a>
+<FONT color="green">967</FONT>            public TextStatus         mTextStatus;<a name="line.967"></a>
+<FONT color="green">968</FONT>            public VoiceStatus        mVoiceStatus;<a name="line.968"></a>
+<FONT color="green">969</FONT>            public VideoStatus        mVideoStatus;<a name="line.969"></a>
+<FONT color="green">970</FONT>            public String             mLiveIdentity;<a name="line.970"></a>
+<FONT color="green">971</FONT>            public String             mLivePriceForMe;<a name="line.971"></a>
+<FONT color="green">972</FONT>            public String             mLiveFwdIdentities;<a name="line.972"></a>
+<FONT color="green">973</FONT>            public long               mLiveStartTimestamp;<a name="line.973"></a>
+<FONT color="green">974</FONT>            public int                mSoundLevel;<a name="line.974"></a>
+<FONT color="green">975</FONT>            public String             mDebugInfo;<a name="line.975"></a>
+<FONT color="green">976</FONT>            public String             mLastVoiceError;<a name="line.976"></a>
+<FONT color="green">977</FONT>            public String             mQualityProblems;<a name="line.977"></a>
+<FONT color="green">978</FONT>            public Skype.IdentityType mLiveType;<a name="line.978"></a>
+<FONT color="green">979</FONT>            public String             mLiveCountry;<a name="line.979"></a>
+<FONT color="green">980</FONT>            public String             mTransferredBy;<a name="line.980"></a>
+<FONT color="green">981</FONT>            public String             mTransferredTo;<a name="line.981"></a>
+<FONT color="green">982</FONT>            public String             mAdder;<a name="line.982"></a>
+<FONT color="green">983</FONT>            public Skype.LeaveReason  mLastLeavereason;<a name="line.983"></a>
+<FONT color="green">984</FONT>            public int moduleId() {<a name="line.984"></a>
+<FONT color="green">985</FONT>                    return 19;<a name="line.985"></a>
+<FONT color="green">986</FONT>            }<a name="line.986"></a>
+<FONT color="green">987</FONT>            <a name="line.987"></a>
+<FONT color="green">988</FONT>            public Participant(final int oid, final SidRoot root) {<a name="line.988"></a>
+<FONT color="green">989</FONT>                    super(oid, root, 21);<a name="line.989"></a>
+<FONT color="green">990</FONT>            }<a name="line.990"></a>
+<FONT color="green">991</FONT>    }<a name="line.991"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

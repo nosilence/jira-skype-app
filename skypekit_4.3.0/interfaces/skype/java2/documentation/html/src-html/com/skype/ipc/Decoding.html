@@ -1,0 +1,141 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    package com.skype.ipc;<a name="line.1"></a>
+<FONT color="green">002</FONT>    <a name="line.2"></a>
+<FONT color="green">003</FONT>    import java.io.IOException;<a name="line.3"></a>
+<FONT color="green">004</FONT>    //import java.util.ArrayList;<a name="line.4"></a>
+<FONT color="green">005</FONT>    //import java.lang.Boolean;<a name="line.5"></a>
+<FONT color="green">006</FONT>    //import java.lang.Integer;<a name="line.6"></a>
+<FONT color="green">007</FONT>    //import java.lang.Long;<a name="line.7"></a>
+<FONT color="green">008</FONT>    import java.lang.String;<a name="line.8"></a>
+<FONT color="green">009</FONT>    //import java.lang.ByteArray;<a name="line.9"></a>
+<FONT color="green">010</FONT>    <a name="line.10"></a>
+<FONT color="green">011</FONT>    public interface Decoding {<a name="line.11"></a>
+<FONT color="green">012</FONT>            int decodeInt() throws IOException;<a name="line.12"></a>
+<FONT color="green">013</FONT>            int decodeUint() throws IOException;<a name="line.13"></a>
+<FONT color="green">014</FONT>            long decodeUint64() throws IOException;<a name="line.14"></a>
+<FONT color="green">015</FONT>            String decodeString() throws IOException;<a name="line.15"></a>
+<FONT color="green">016</FONT>            byte[] decodeBinary() throws IOException;<a name="line.16"></a>
+<FONT color="green">017</FONT>            void skipValue(final int kind) throws IOException;<a name="line.17"></a>
+<FONT color="green">018</FONT>    <a name="line.18"></a>
+<FONT color="green">019</FONT>            byte[] getBinaryParm(final int tag, final boolean finalMarker) throws IOException; <a name="line.19"></a>
+<FONT color="green">020</FONT>            byte[] getBinaryParm(final int tag, final byte[] defaultValue, final boolean finalMarker) throws IOException; <a name="line.20"></a>
+<FONT color="green">021</FONT>    //      byte[][] getBinaryListParm(final int tag, final boolean finalMarker) throws IOException;<a name="line.21"></a>
+<FONT color="green">022</FONT>    <a name="line.22"></a>
+<FONT color="green">023</FONT>            boolean getBoolParm(final int tag, final boolean finalMarker) throws IOException; <a name="line.23"></a>
+<FONT color="green">024</FONT>            boolean getBoolParm(final int tag, final boolean defaultValue, final boolean finalMarker) throws IOException; <a name="line.24"></a>
+<FONT color="green">025</FONT>            boolean[] getBoolListParm(int tag, boolean finalMarker) throws IOException;<a name="line.25"></a>
+<FONT color="green">026</FONT>    <a name="line.26"></a>
+<FONT color="green">027</FONT>            EnumConverting getEnumParm(final int tag, final EnumConverting converter, final boolean finalMarker) throws IOException; <a name="line.27"></a>
+<FONT color="green">028</FONT>            EnumConverting getEnumParm(int tag, EnumConverting converter, int defaultValue, boolean finalMarker) throws IOException; <a name="line.28"></a>
+<FONT color="green">029</FONT>            &lt;T extends EnumConverting&gt; T[] getEnumListParm(final int tag, T converter, final boolean finalMarker) throws IOException;<a name="line.29"></a>
+<FONT color="green">030</FONT>    <a name="line.30"></a>
+<FONT color="green">031</FONT>            int getIntParm(final int tag, final boolean finalMarker) throws IOException; <a name="line.31"></a>
+<FONT color="green">032</FONT>            int getIntParm(final int tag, final int defaultValue, final boolean finalMarker) throws IOException; <a name="line.32"></a>
+<FONT color="green">033</FONT>            int[] getIntListParm(final int tag, final boolean finalMarker) throws IOException;<a name="line.33"></a>
+<FONT color="green">034</FONT>    <a name="line.34"></a>
+<FONT color="green">035</FONT>            int getUintParm(final int tag, final boolean finalMarker) throws IOException; <a name="line.35"></a>
+<FONT color="green">036</FONT>            int getUintParm(final int tag, final int defaultValue, final boolean finalMarker) throws IOException; <a name="line.36"></a>
+<FONT color="green">037</FONT>            int[] getUintListParm(final int tag, final boolean finalMarker) throws IOException;<a name="line.37"></a>
+<FONT color="green">038</FONT>    <a name="line.38"></a>
+<FONT color="green">039</FONT>    <a name="line.39"></a>
+<FONT color="green">040</FONT>            long getTimestampParm(final int tag, final boolean finalMarker) throws IOException; <a name="line.40"></a>
+<FONT color="green">041</FONT>            long getTimestampParm(final int tag, final long defaultValue, final boolean finalMarker) throws IOException; <a name="line.41"></a>
+<FONT color="green">042</FONT>            long[] getTimestampListParm(final int tag, final boolean finalMarker) throws IOException;<a name="line.42"></a>
+<FONT color="green">043</FONT>    <a name="line.43"></a>
+<FONT color="green">044</FONT>            long getUint64Parm(final int tag, final boolean finalMarker) throws IOException; <a name="line.44"></a>
+<FONT color="green">045</FONT>            long getUint64Parm(final int tag, final long defaultValue, final boolean finalMarker) throws IOException; <a name="line.45"></a>
+<FONT color="green">046</FONT>            long[] getUint64ListParm(final int tag, final boolean finalMarker) throws IOException;<a name="line.46"></a>
+<FONT color="green">047</FONT>    <a name="line.47"></a>
+<FONT color="green">048</FONT>            SidObject getObjectParm(final int tag, final int module_id, final boolean finalMarker) throws IOException; <a name="line.48"></a>
+<FONT color="green">049</FONT>            SidObject[] getObjectListParm(final int tag, final int moduleId, final boolean finalMarker) throws IOException;<a name="line.49"></a>
+<FONT color="green">050</FONT>    <a name="line.50"></a>
+<FONT color="green">051</FONT>            String getStringParm(final int tag, final boolean finalMarker) throws IOException; <a name="line.51"></a>
+<FONT color="green">052</FONT>            String getStringParm(final int tag, final String defaultValue, final boolean finalMarker) throws IOException; <a name="line.52"></a>
+<FONT color="green">053</FONT>            String[] getStringListParm(final int tag, final boolean finalMarker) throws IOException;<a name="line.53"></a>
+<FONT color="green">054</FONT>    <a name="line.54"></a>
+<FONT color="green">055</FONT>            String getFilenameParm(final int tag, final boolean finalMarker) throws IOException; <a name="line.55"></a>
+<FONT color="green">056</FONT>            String getFilenameParm(final int tag, final String defaultValue, final boolean finalMarker) throws IOException; <a name="line.56"></a>
+<FONT color="green">057</FONT>            String[] getFilenameListParm(final int tag, final boolean finalMarker) throws IOException;<a name="line.57"></a>
+<FONT color="green">058</FONT>    <a name="line.58"></a>
+<FONT color="green">059</FONT>            String getXmlParm(final int tag, final boolean finalMarker) throws IOException; <a name="line.59"></a>
+<FONT color="green">060</FONT>            String getXmlParm(final int tag, final String defaultValue, final boolean finalMarker) throws IOException; <a name="line.60"></a>
+<FONT color="green">061</FONT>            String[] getXmlListParm(final int tag, final boolean finalMarker) throws IOException;<a name="line.61"></a>
+<FONT color="green">062</FONT>    <a name="line.62"></a>
+<FONT color="green">063</FONT>            void skipMessage() throws IOException;<a name="line.63"></a>
+<FONT color="green">064</FONT>    <a name="line.64"></a>
+<FONT color="green">065</FONT>            int decodeTag() throws IOException;<a name="line.65"></a>
+<FONT color="green">066</FONT>    <a name="line.66"></a>
+<FONT color="green">067</FONT>            boolean hasNextProperty() throws IOException;<a name="line.67"></a>
+<FONT color="green">068</FONT>            PropertyInfo getNextProperty() throws IOException;<a name="line.68"></a>
+<FONT color="green">069</FONT>    <a name="line.69"></a>
+<FONT color="green">070</FONT>            int decodeResponse() throws IOException;<a name="line.70"></a>
+<FONT color="green">071</FONT>            Decoding decodeEvent() throws IOException;<a name="line.71"></a>
+<FONT color="green">072</FONT>            int getCommand();<a name="line.72"></a>
+<FONT color="green">073</FONT>    }<a name="line.73"></a>
+<FONT color="green">074</FONT>    <a name="line.74"></a>
+<FONT color="green">075</FONT>    <a name="line.75"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>
