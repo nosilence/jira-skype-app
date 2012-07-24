@@ -1,83 +1,88 @@
+VALID_SKYPE_USERS = {
+	'nickcherryjiggz',
+	'vini.dy'
+}
 
-
-import keypair;
+from jira.client import JIRA
+import keypair
 import re
-import sys;
-from time import sleep;
+import sys
+from time import sleep
 
 
-sys.path.append(keypair.distroRoot + '/ipc/python');
-sys.path.append(keypair.distroRoot + '/interfaces/skype/python');
+
+jira_options = { 'server': 'https://thewonderfactory.atlassian.net' }
+jira = JIRA(basic_auth=('ncherry', 'ncherry'), options=jira_options)
+
+
+
+sys.path.append(keypair.distroRoot + '/ipc/python')
+sys.path.append(keypair.distroRoot + '/interfaces/skype/python')
 
 
 
 try:
-	import Skype;
+	import Skype
 except ImportError:
-	raise SystemExit('Program requires Skype and skypekit modules');
+	raise SystemExit('Program requires Skype and skypekit modules')
 
 
 
 if len(sys.argv) != 3:
-	print('Usage: python skype-app.py <skypename> <password>');
-	sys.exit();
+	print('Usage: python skype-app.py <skypename> <password>')
+	sys.exit()
 
 
 
-accountName = sys.argv[1];
-accountPsw  = sys.argv[2];
-loggedIn	= False;
+skype_username = sys.argv[1]
+skype_password  = sys.argv[2]
+logged_into_skype	= False
 
 
 
 def OnMessage(self, message, changesInboxTimestamp, supersedesHistoryMessage, conversation):
-	if message.author == accountName:
-		directMessageRecipients = re.findall(r'\@\w+', message.body_xml)
-		directMessageRecipients = map(lambda r: r[1:], directMessageRecipients);
-		if directMessageRecipients:
-			if message.CanEdit():
-				message.Edit("");
-			newConversation = MySkype.GetConversationByParticipants(directMessageRecipients, True, False);
-			newConversationParticipants = newConversation.GetParticipants('ALL');			
-			newMessage = newConversation.PostText("DM: " + message.body_xml, False);
+	if message.author != skype_username:
+		issues
+		direct_message_recipients = re.findall(r'\@\w+', message.body_xml)
+		direct_message_recipients = map(lambda r: r[1:], direct_message_recipients)
 
 
 
 def AccountOnChange (self, property_name):
-	global loggedIn;
+	global logged_into_skype
 	if property_name == 'status':
 		if self.status == 'LOGGED_IN':
-			loggedIn = True;
-			print('Login complete.');
+			logged_into_skype = True
+			print('Login complete.')
 			
 
 
-Skype.Account.OnPropertyChange = AccountOnChange;
-Skype.Skype.OnMessage = OnMessage;
+Skype.Account.OnPropertyChange = AccountOnChange
+Skype.Skype.OnMessage = OnMessage
 
 
 
 try:
-	MySkype = Skype.GetSkype(keypair.keyFileName);
-	MySkype.Start();
+	MySkype = Skype.GetSkype(keypair.keyFileName)
+	MySkype.Start()
 except Exception:
-	raise SystemExit('Unable to create skype instance.');
+	raise SystemExit('Unable to create skype instance.')
 
 
 
-account = MySkype.GetAccount(accountName);
-print('Logging in with ' + accountName);
-account.LoginWithPassword(accountPsw, False, False);
+account = MySkype.GetAccount(skype_username)
+print('Logging in with ' + skype_username)
+account.LoginWithPassword(skype_password, False, False)
 
 
 
-while loggedIn == False:
-	sleep(1);
+while logged_into_skype == False:
+	sleep(1)
 
 
 
-print('Now accepting incoming chat messages.');
-print('Press ENTER to quit.');
-raw_input('');
-print('Exiting..');
-MySkype.stop();
+print('Now accepting incoming chat messages.')
+print('Press ENTER to quit.')
+raw_input('')
+print('Exiting..')
+MySkype.stop()
